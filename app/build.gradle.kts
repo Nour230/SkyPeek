@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    kotlin("plugin.serialization") version "2.1.10"
 }
 
 android {
@@ -60,4 +61,20 @@ dependencies {
 
     //lottie
     implementation (libs.lottie.compose)
+
+    //BottomNav
+    implementation(libs.animated.navigation.bar)
+
+    //Navigation
+    implementation(libs.androidx.navigation.compose)
+    //Serialization for NavArgs
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.material3) // Material3
+
+    //Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.logging.interceptor)
+
 }
