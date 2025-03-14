@@ -1,9 +1,7 @@
 package com.example.skypeek.composablescreens.splash
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -40,16 +38,15 @@ fun SplashScreen(navToMainScreen: () -> Unit) {
             .background(color = background),
         contentAlignment = Alignment.Center
     ) {
-        // LottieAnimation centered below the text
+
         LottieAnimation(
             composition = composition,
             progress = { progress },
             modifier = Modifier
-                .size(500.dp)
+                .size(600.dp)
                 . align(Alignment.TopCenter)
-                .padding(top = 160.dp)
+                .padding(top = 170.dp)
         )
-        // Text at the top center
         Text(
             text = "SKYPEEK",
             fontSize = 32.sp,

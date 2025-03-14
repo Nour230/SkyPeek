@@ -8,32 +8,17 @@ import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -46,6 +31,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.skypeek.composablescreens.ScreensRoute
 import com.example.skypeek.composablescreens.SetupNavHost
+import com.example.skypeek.data.remote.RetrofitHelper.weatherApiService
+import com.example.skypeek.data.remote.WeatherApiService
 import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
 import com.exyte.animatednavbar.animation.indendshape.Height
@@ -57,19 +44,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         hideSystemUI()
+        val apiService = weatherApiService
+
         setContent {
-            WeatherApp()
+            WeatherApp(apiService) // ✅ Pass it to WeatherApp
         }
     }
 
     @Composable
-    fun WeatherApp() {
+    fun WeatherApp(apiService: WeatherApiService) {
         val navController = rememberNavController()
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
 
         var selectedIndex by remember { mutableStateOf(0) }
-        val navigationBarItems = NavigationBarItems.values()
+        val navigationBarItems = NavigationBarItems.entries.toTypedArray()
 
         val hapticFeedback = LocalHapticFeedback.current
 
@@ -85,7 +74,7 @@ class MainActivity : ComponentActivity() {
                         barColor = com.example.skypeek.ui.theme.loyalBlue,
                         ballColor = com.example.skypeek.ui.theme.semone
                     ) {
-                        navigationBarItems.forEach { item ->
+                        navigationBarItems.forEachIndexed { index, item ->
                             var isShaking by remember { mutableStateOf(false) }
 
                             // Animate left-right movement
@@ -103,19 +92,21 @@ class MainActivity : ComponentActivity() {
                                     .fillMaxSize()
                                     .offset(x = shakeOffset.dp)
                                     .noRippleClickableWithVibration(hapticFeedback) {
-                                        if (selectedIndex != item.ordinal) { // Only update if selecting a different item
-                                            selectedIndex = item.ordinal
+                                        if (selectedIndex != index) { // Only update if selecting a different item
+                                            selectedIndex = index
+                                            navController.navigate(item.route) { // ✅ Navigate to the selected screen
+                                                popUpTo(ScreensRoute.HomeScreen.route) { inclusive = false }
+                                            }
                                             isShaking = true
                                         }
-                                    }
-                                ,
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     modifier = Modifier.size(26.dp),
                                     imageVector = item.icon,
                                     contentDescription = "Bottom Nav Icon",
-                                    tint = if (selectedIndex == item.ordinal)
+                                    tint = if (selectedIndex == index)
                                         com.example.skypeek.ui.theme.semone
                                     else com.example.skypeek.ui.theme.white
                                 )
@@ -139,31 +130,29 @@ class MainActivity : ComponentActivity() {
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                SetupNavHost(navController)
+                SetupNavHost(navController, apiService)
             }
         }
     }
 
-
     enum class NavigationBarItems(val icon: ImageVector, val route: String) {
         Home(Icons.Filled.Home, ScreensRoute.HomeScreen.route),
-        Search(Icons.Filled.Search, "search"),
-        Settings(Icons.Filled.Settings, "settings")
+        Search(Icons.Filled.Search, "search"),   // 🚨 Ensure this exists in SetupNavHost()
+        Settings(Icons.Filled.Settings, "settings") // 🚨 Ensure this exists in SetupNavHost()
     }
 
     fun Modifier.noRippleClickableWithVibration(
         hapticFeedback: HapticFeedback,
-        onClick: () -> Unit // Regular function, not composable
+        onClick: () -> Unit
     ): Modifier = composed {
         clickable(
             indication = null,
             interactionSource = remember { MutableInteractionSource() }
         ) {
-            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress) // Small vibration
-            onClick() // Regular function call
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            onClick()
         }
     }
-
 
     private fun hideSystemUI() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -180,5 +169,4 @@ class MainActivity : ComponentActivity() {
                     or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
         }
     }
-
 }

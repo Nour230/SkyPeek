@@ -77,4 +77,11 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
 
+    //LiveData & Compose
+    val compose_version = "1.0.0"
+    implementation (libs.androidx.runtime.livedata)
+
+    //ConstraintLayout
+    implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+
 }
