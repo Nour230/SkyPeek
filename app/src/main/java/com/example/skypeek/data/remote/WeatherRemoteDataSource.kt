@@ -11,12 +11,10 @@ class WeatherRemoteDataSource(private val weatherApiService: WeatherApiService) 
         apiKey: String
     ): WeatherResponse {
 
-        Log.i("TAG", "API Key: $apiKey, Lat: $lat, Lon: $lon") // 🔍 Log API request details
 
         val response = weatherApiService.getWeatherData(lat, lon, apiKey)
 
         if (response.isSuccessful) {
-            Log.i("TAG", "Success: ${response.body()}")
             return response.body()?: throw Exception("Empty response body")
         } else {
             Log.e("TAG", "API Error: ${response.code()} - ${response.message()}") // Log error

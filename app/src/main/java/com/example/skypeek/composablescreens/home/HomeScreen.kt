@@ -15,7 +15,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.skypeek.BuildConfig
-import com.example.skypeek.composablescreens.home.HomeViewModel
 import com.example.skypeek.data.models.WeatherResponse
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -29,7 +28,6 @@ fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Locatio
 
     LaunchedEffect(locationState.value) {
         locationState.value?.let { location ->
-            Log.d("HomeScreen", "Fetching weather for: ${location.latitude}, ${location.longitude}")
             homeViewModel.getWeather(
                 location.latitude,
                 location.longitude,
@@ -42,7 +40,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Locatio
         Text(text = "Current Weather")
 
         if (errorMessage != null) {
-            Log.e("HomeScreen", "Error: $errorMessage")
+            Log.e("TAG", "Error: $errorMessage")
             Text(text = "Error: $errorMessage")
         } else {
             currentWeather?.let { weather ->

@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -49,6 +50,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.skypeek.composablescreens.ScreensRoute
 import com.example.skypeek.composablescreens.SetupNavHost
+import com.example.skypeek.composablescreens.utiles.LocalNavController
 import com.example.skypeek.composablescreens.utiles.LocationHelper
 import com.example.skypeek.composablescreens.utiles.REQUEST_LOCATION_PERMISSION
 import com.example.skypeek.data.remote.RetrofitHelper.weatherApiService
@@ -98,7 +100,7 @@ class MainActivity : ComponentActivity() {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 fetchLocation()
             } else {
-                Log.e("MainActivity", "Permission denied by user.")
+                Log.e("TAG", "MainActivity Permission denied by user.")
             }
         }
     }
@@ -120,85 +122,93 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun WeatherApp(apiService: WeatherApiService, locationState: MutableState<Location?>) {
         val navController = rememberNavController()
-        val currentBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = currentBackStackEntry?.destination?.route
+        CompositionLocalProvider(LocalNavController provides navController) {
+            val currentBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = currentBackStackEntry?.destination?.route ?: ScreensRoute.SplashScreen.route
+            Log.i("TAG", "WeatherApp: $currentRoute")
+            var selectedIndex by remember { mutableStateOf(0) }
+            val navigationBarItems = NavigationBarItems.entries.toTypedArray()
 
-        var selectedIndex by remember { mutableStateOf(0) }
-        val navigationBarItems = NavigationBarItems.entries.toTypedArray()
+            val hapticFeedback = LocalHapticFeedback.current
+            var showBottomBar by remember { mutableStateOf(false) }
 
-        val hapticFeedback = LocalHapticFeedback.current
+            // Update showBottomBar based on the current route
+            LaunchedEffect(currentRoute) {
+                showBottomBar = currentRoute != ScreensRoute.SplashScreen.route
+                Log.i("TAG", "WeatherApp: $showBottomBar")
+            }
 
-        Scaffold(
-            bottomBar = {
-                if (currentRoute != ScreensRoute.SplashScreen.route) {
-                    AnimatedNavigationBar(
-                        modifier = Modifier.height(64.dp),
-                        selectedIndex = selectedIndex,
-                        cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
-                        ballAnimation = Parabolic(tween(300)),
-                        indentAnimation = Height(tween(600)),
-                        barColor = com.example.skypeek.ui.theme.loyalBlue,
-                        ballColor = com.example.skypeek.ui.theme.semone
-                    ) {
-                        navigationBarItems.forEachIndexed { index, item ->
-                            var isShaking by remember { mutableStateOf(false) }
+            Scaffold(
+                bottomBar = {
+                    // Only show bottom bar if NOT on SplashScreen
+                    if (showBottomBar) {
+                        AnimatedNavigationBar(
+                            modifier = Modifier.height(64.dp),
+                            selectedIndex = selectedIndex,
+                            cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
+                            ballAnimation = Parabolic(tween(300)),
+                            indentAnimation = Height(tween(600)),
+                            barColor = com.example.skypeek.ui.theme.loyalBlue,
+                            ballColor = com.example.skypeek.ui.theme.semone
+                        ) {
+                            navigationBarItems.forEachIndexed { index, item ->
+                                var isShaking by remember { mutableStateOf(false) }
 
-                            // Animate left-right movement
-                            val shakeOffset by animateFloatAsState(
-                                targetValue = if (isShaking) 8f else 0f,
-                                animationSpec = infiniteRepeatable(
-                                    animation = tween(50, easing = FastOutLinearInEasing),
-                                    repeatMode = RepeatMode.Reverse
-                                ),
-                                label = "Shake Animation"
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .offset(x = shakeOffset.dp)
-                                    .noRippleClickableWithVibration(hapticFeedback) {
-                                        if (selectedIndex != index) { // Only update if selecting a different item
-                                            selectedIndex = index
-                                            navController.navigate(item.route) { // ✅ Navigate to the selected screen
-                                                popUpTo(ScreensRoute.HomeScreen.route) {
-                                                    inclusive = false
-                                                }
-                                            }
-                                            isShaking = true
-                                        }
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    modifier = Modifier.size(26.dp),
-                                    imageVector = item.icon,
-                                    contentDescription = "Bottom Nav Icon",
-                                    tint = if (selectedIndex == index)
-                                        com.example.skypeek.ui.theme.semone
-                                    else com.example.skypeek.ui.theme.white
+                                val shakeOffset by animateFloatAsState(
+                                    targetValue = if (isShaking) 8f else 0f,
+                                    animationSpec = infiniteRepeatable(
+                                        animation = tween(50, easing = FastOutLinearInEasing),
+                                        repeatMode = RepeatMode.Reverse
+                                    ),
+                                    label = "Shake Animation"
                                 )
 
-                                // ✅ Single LaunchedEffect to handle shaking logic
-                                LaunchedEffect(isShaking) {
-                                    if (isShaking) {
-                                        delay(300) // Wait for 300ms
-                                        isShaking = false // Stop the shaking
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .offset(x = shakeOffset.dp)
+                                        .noRippleClickableWithVibration(hapticFeedback) {
+                                            if (selectedIndex != index) {
+                                                selectedIndex = index
+                                                navController.navigate(item.route) {
+                                                    popUpTo(ScreensRoute.HomeScreen.route) {
+                                                        inclusive = false
+                                                    }
+                                                }
+                                                isShaking = true
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.size(26.dp),
+                                        imageVector = item.icon,
+                                        contentDescription = "Bottom Nav Icon",
+                                        tint = if (selectedIndex == index)
+                                            com.example.skypeek.ui.theme.semone
+                                        else com.example.skypeek.ui.theme.white
+                                    )
+
+                                    LaunchedEffect(isShaking) {
+                                        if (isShaking) {
+                                            delay(300)
+                                            isShaking = false
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                SetupNavHost(navController, apiService, locationState)
+            ) { paddingValues ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    SetupNavHost(apiService, locationState)
+                }
             }
         }
     }

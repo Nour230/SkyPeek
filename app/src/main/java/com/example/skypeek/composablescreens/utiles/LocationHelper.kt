@@ -55,22 +55,20 @@ class LocationHelper(private val context: Context) {
     @SuppressLint("MissingPermission")
     fun getFreshLocation(onLocationReceived: (Location?) -> Unit) {
         if (!hasLocationPermissions()) {
-            Log.e("LocationHelper", "Location permission not granted.")
             return
         }
 
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location ->
                 if (location != null) {
-                    Log.d("LocationHelper", "Location: ${location.latitude}, ${location.longitude}")
                     onLocationReceived(location)
                 } else {
-                    Log.e("LocationHelper", "Failed to retrieve location.")
+                    Log.e("TAG", "LocationHelper Failed to retrieve location.")
                     onLocationReceived(null)
                 }
             }
             .addOnFailureListener {
-                Log.e("LocationHelper", "Failed to get location: ${it.message}")
+                Log.e("TAG", "LocationHelper Failed to get location: ${it.message}")
                 onLocationReceived(null)
             }
     }

@@ -1,6 +1,7 @@
 package com.example.skypeek.composablescreens
 
 import android.location.Location
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.navigation.NavHostController
@@ -12,14 +13,16 @@ import com.example.skypeek.data.remote.WeatherApiService
 import com.example.skypeek.data.remote.WeatherRemoteDataSource
 import com.example.skypeek.data.repository.WeatherRepositoryImpl
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
 import com.example.skypeek.composablescreens.home.HomeScreen
 import com.example.skypeek.composablescreens.home.WeatherFactory
+import com.example.skypeek.composablescreens.utiles.LocalNavController
 
 @Composable
-fun SetupNavHost(navController: NavHostController,
-                 apiService: WeatherApiService,
+fun SetupNavHost(apiService: WeatherApiService,
                  locationState: MutableState<Location?>
                  ) {
+    val navController = LocalNavController.current
     val remoteDataSource = WeatherRemoteDataSource(apiService)
     val weatherRepository = WeatherRepositoryImpl(remoteDataSource)
 
@@ -35,6 +38,7 @@ fun SetupNavHost(navController: NavHostController,
             SplashScreen {
                 navController.navigate(ScreensRoute.HomeScreen.route) {
                     popUpTo(ScreensRoute.SplashScreen.route) { inclusive = true }
+                    launchSingleTop = true
                 }
             }
         }
