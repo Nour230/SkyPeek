@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -55,6 +56,9 @@ import com.example.skypeek.composablescreens.utiles.LocationHelper
 import com.example.skypeek.composablescreens.utiles.REQUEST_LOCATION_PERMISSION
 import com.example.skypeek.data.remote.RetrofitHelper.weatherApiService
 import com.example.skypeek.data.remote.WeatherApiService
+import com.example.skypeek.ui.screenshelper.customShadow
+import com.example.skypeek.ui.theme.Purple40
+import com.example.skypeek.ui.theme.black
 import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
 import com.exyte.animatednavbar.animation.indendshape.Height
@@ -138,7 +142,18 @@ class MainActivity : ComponentActivity() {
                 Log.i("TAG", "WeatherApp: $showBottomBar")
             }
 
-            Scaffold(
+            Surface (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .customShadow(
+                    color = Purple40,
+                    alpha = 0.5f,
+                    shadowRadius = 16.dp,
+                    borderRadius = 42.dp,
+                    offsetY = (40).dp
+                )
+            ){
+                Scaffold(
                 bottomBar = {
                     // Only show bottom bar if NOT on SplashScreen
                     if (showBottomBar) {
@@ -209,7 +224,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     SetupNavHost(apiService, locationState)
                 }
-            }
+            } }
         }
     }
 

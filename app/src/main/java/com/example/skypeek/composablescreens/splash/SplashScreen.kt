@@ -35,7 +35,7 @@ fun SplashScreen(navToMainScreen: () -> Unit) {
 
     Box(
         modifier = Modifier.fillMaxSize()
-            .background(color = background),
+            .background(color = backgroundColor),
         contentAlignment = Alignment.Center
     ) {
 

@@ -32,7 +32,7 @@ fun SetupNavHost(apiService: WeatherApiService,
 
     NavHost(
         navController = navController,
-        startDestination = ScreensRoute.SplashScreen.route
+        startDestination = ScreensRoute.HomeScreen.route
     ) {
         composable(ScreensRoute.SplashScreen.route) {
             SplashScreen {
