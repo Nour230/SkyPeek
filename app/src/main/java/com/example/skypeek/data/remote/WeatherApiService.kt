@@ -1,6 +1,6 @@
 package com.example.skypeek.data.remote
 
-import WeatherResponse
+import com.example.skypeek.data.models.WeatherResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query

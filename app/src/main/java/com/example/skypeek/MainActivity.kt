@@ -1,24 +1,42 @@
 package com.example.skypeek
 
+import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -31,6 +49,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.skypeek.composablescreens.ScreensRoute
 import com.example.skypeek.composablescreens.SetupNavHost
+import com.example.skypeek.composablescreens.utiles.LocationHelper
+import com.example.skypeek.composablescreens.utiles.REQUEST_LOCATION_PERMISSION
 import com.example.skypeek.data.remote.RetrofitHelper.weatherApiService
 import com.example.skypeek.data.remote.WeatherApiService
 import com.exyte.animatednavbar.AnimatedNavigationBar
@@ -39,20 +59,66 @@ import com.exyte.animatednavbar.animation.indendshape.Height
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import kotlinx.coroutines.delay
 
+
 class MainActivity : ComponentActivity() {
+    private lateinit var locationHelper: LocationHelper
+    lateinit var locationState: MutableState<Location?>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         hideSystemUI()
-        val apiService = weatherApiService
 
+        locationHelper = LocationHelper(this)
+        locationState = mutableStateOf(null)
         setContent {
-            WeatherApp(apiService) // ✅ Pass it to WeatherApp
+            WeatherApp(weatherApiService, locationState)
+        }
+
+        if (!locationHelper.hasLocationPermissions()) {
+            locationHelper.requestLocationPermissions(this)
+        } else {
+            fetchLocation()
         }
     }
 
+    private fun fetchLocation() {
+        locationHelper.getFreshLocation { location ->
+            locationState.value = location
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                fetchLocation()
+            } else {
+                Log.e("MainActivity", "Permission denied by user.")
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (locationHelper.hasLocationPermissions()) {
+            if (locationHelper.isLocationEnabled()) {
+                fetchLocation()
+            } else {
+                locationHelper.enableLocation()
+            }
+        } else {
+            locationHelper.requestLocationPermissions(this)
+        }
+    }
+
+
     @Composable
-    fun WeatherApp(apiService: WeatherApiService) {
+    fun WeatherApp(apiService: WeatherApiService, locationState: MutableState<Location?>) {
         val navController = rememberNavController()
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
@@ -95,7 +161,9 @@ class MainActivity : ComponentActivity() {
                                         if (selectedIndex != index) { // Only update if selecting a different item
                                             selectedIndex = index
                                             navController.navigate(item.route) { // ✅ Navigate to the selected screen
-                                                popUpTo(ScreensRoute.HomeScreen.route) { inclusive = false }
+                                                popUpTo(ScreensRoute.HomeScreen.route) {
+                                                    inclusive = false
+                                                }
                                             }
                                             isShaking = true
                                         }
@@ -130,7 +198,7 @@ class MainActivity : ComponentActivity() {
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                SetupNavHost(navController, apiService)
+                SetupNavHost(navController, apiService, locationState)
             }
         }
     }
@@ -169,4 +237,5 @@ class MainActivity : ComponentActivity() {
                     or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
         }
     }
+
 }

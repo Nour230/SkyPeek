@@ -1,11 +1,11 @@
 package com.example.skypeek.composablescreens.home
 
-import WeatherResponse
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.skypeek.data.models.WeatherResponse
 
 import com.example.skypeek.data.repository.WeatherRepository
 import kotlinx.coroutines.launch

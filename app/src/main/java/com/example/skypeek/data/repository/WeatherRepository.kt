@@ -1,6 +1,6 @@
 package com.example.skypeek.data.repository
 
-import WeatherResponse
+import com.example.skypeek.data.models.WeatherResponse
 
 
 interface WeatherRepository {

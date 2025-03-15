@@ -1,7 +1,7 @@
 package com.example.skypeek.data.remote
 
-import WeatherResponse
 import android.util.Log
+import com.example.skypeek.data.models.WeatherResponse
 
 
 class WeatherRemoteDataSource(private val weatherApiService: WeatherApiService) : RemoteDataSource  {

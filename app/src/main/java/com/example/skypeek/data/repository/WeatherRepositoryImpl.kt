@@ -1,7 +1,7 @@
 package com.example.skypeek.data.repository
 
 
-import WeatherResponse
+import com.example.skypeek.data.models.WeatherResponse
 import com.example.skypeek.data.remote.RemoteDataSource
 
 class WeatherRepositoryImpl(private val remoteDataSource: RemoteDataSource) : WeatherRepository {

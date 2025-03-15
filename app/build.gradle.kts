@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,6 +11,9 @@ plugins {
 android {
     namespace = "com.example.skypeek"
     compileSdk = 35
+    val file = rootProject.file("local.properties")
+    val properties = Properties()
+    properties.load(FileInputStream(file))
 
     defaultConfig {
         applicationId = "com.example.skypeek"
@@ -15,6 +21,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "apiKeySafe", properties.getProperty("apiKey"))
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -37,6 +45,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -78,10 +87,12 @@ dependencies {
     implementation(libs.logging.interceptor)
 
     //LiveData & Compose
-    val compose_version = "1.0.0"
     implementation (libs.androidx.runtime.livedata)
 
     //ConstraintLayout
-    implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    implementation (libs.androidx.constraintlayout.compose)
+
+    //Location
+    implementation(libs.play.services.location)
 
 }
