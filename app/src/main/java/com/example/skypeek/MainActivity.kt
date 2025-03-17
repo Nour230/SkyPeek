@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -45,6 +47,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.SideEffect
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -58,13 +61,19 @@ import com.example.skypeek.data.remote.RetrofitHelper.weatherApiService
 import com.example.skypeek.data.remote.WeatherApiService
 import com.example.skypeek.ui.screenshelper.customShadow
 import com.example.skypeek.ui.theme.Purple40
-import com.example.skypeek.ui.theme.black
+import androidx.compose.runtime.*
+import com.example.skypeek.ui.theme.backgroundColor
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
 import com.exyte.animatednavbar.animation.indendshape.Height
-import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import kotlinx.coroutines.delay
-
+import com.example.skypeek.ui.theme.black
+import com.example.skypeek.ui.theme.lightBlue
+import com.example.skypeek.ui.theme.loyalBlue
+import com.example.skypeek.ui.theme.secbackgroundColor
+import com.example.skypeek.ui.theme.semonelight
+import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 
 class MainActivity : ComponentActivity() {
     private lateinit var locationHelper: LocationHelper
@@ -73,12 +82,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         hideSystemUI()
 
         locationHelper = LocationHelper(this)
         locationState = mutableStateOf(null)
+
+        // Apply only for Android 11+ (API 30)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+        }
+
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
+
         setContent {
             WeatherApp(weatherApiService, locationState)
+            FullScreenEffect()
         }
 
         if (!locationHelper.hasLocationPermissions()) {
@@ -87,6 +107,7 @@ class MainActivity : ComponentActivity() {
             fetchLocation()
         }
     }
+
 
     private fun fetchLocation() {
         locationHelper.getFreshLocation { location ->
@@ -160,11 +181,12 @@ class MainActivity : ComponentActivity() {
                         AnimatedNavigationBar(
                             modifier = Modifier.height(64.dp),
                             selectedIndex = selectedIndex,
-                            cornerRadius = shapeCornerRadius(cornerRadius = 34.dp),
+                            cornerRadius = shapeCornerRadius(topLeft = 24.dp, topRight = 24.dp
+                            , bottomLeft = 0.dp, bottomRight = 0.dp),
                             ballAnimation = Parabolic(tween(300)),
                             indentAnimation = Height(tween(600)),
-                            barColor = com.example.skypeek.ui.theme.loyalBlue,
-                            ballColor = com.example.skypeek.ui.theme.semone
+                            barColor = secbackgroundColor,
+                            ballColor = loyalBlue
                         ) {
                             navigationBarItems.forEachIndexed { index, item ->
                                 var isShaking by remember { mutableStateOf(false) }
@@ -200,8 +222,8 @@ class MainActivity : ComponentActivity() {
                                         imageVector = item.icon,
                                         contentDescription = "Bottom Nav Icon",
                                         tint = if (selectedIndex == index)
-                                            com.example.skypeek.ui.theme.semone
-                                        else com.example.skypeek.ui.theme.white
+                                            loyalBlue
+                                        else lightBlue
                                     )
 
                                     LaunchedEffect(isShaking) {
@@ -230,8 +252,9 @@ class MainActivity : ComponentActivity() {
 
     enum class NavigationBarItems(val icon: ImageVector, val route: String) {
         Home(Icons.Filled.Home, ScreensRoute.HomeScreen.route),
-        Search(Icons.Filled.Search, "search"),   // 🚨 Ensure this exists in SetupNavHost()
-        Settings(Icons.Filled.Settings, "settings") // 🚨 Ensure this exists in SetupNavHost()
+        Search(Icons.Filled.Favorite, "search"),
+        Alarm(Icons.Filled.Call, "alarm"),
+        Settings(Icons.Filled.Settings, "settings")
     }
 
     fun Modifier.noRippleClickableWithVibration(
@@ -249,17 +272,26 @@ class MainActivity : ComponentActivity() {
 
     private fun hideSystemUI() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // For Android 11 (API 30) and above
             window.insetsController?.let {
-                it.hide(WindowInsets.Type.systemBars())
+                it.hide(WindowInsets.Type.navigationBars()) // Hide only navigation bar
                 it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         } else {
-            // For older versions
             @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+            window.decorView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    )
+        }
+    }
+
+
+    @Composable
+    fun FullScreenEffect() {
+        val systemUiController = rememberSystemUiController()
+        SideEffect {
+            systemUiController.setSystemBarsColor(color = black, darkIcons = false)
         }
     }
 

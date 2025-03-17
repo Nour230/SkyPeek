@@ -1,7 +1,8 @@
 package com.example.skypeek.data.remote
 
-import android.util.Log
-import com.example.skypeek.data.models.WeatherResponse
+import com.example.skypeek.data.models.CurrentWeather
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 
 class WeatherRemoteDataSource(private val weatherApiService: WeatherApiService) : RemoteDataSource  {
@@ -9,17 +10,9 @@ class WeatherRemoteDataSource(private val weatherApiService: WeatherApiService) 
         lat: Double,
         lon: Double,
         apiKey: String
-    ): WeatherResponse {
+    ): Flow<CurrentWeather> {
 
-
-        val response = weatherApiService.getWeatherData(lat, lon, apiKey)
-
-        if (response.isSuccessful) {
-            return response.body()?: throw Exception("Empty response body")
-        } else {
-            Log.e("TAG", "API Error: ${response.code()} - ${response.message()}") // Log error
-            throw Exception("Failed to fetch weather data: ${response.message()}")
-        }
+        return flowOf(weatherApiService.getCurrentWeatherData(lat, lon, apiKey).body()) as Flow<CurrentWeather>
     }
 }
 

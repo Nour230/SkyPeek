@@ -95,4 +95,6 @@ dependencies {
     //Location
     implementation(libs.play.services.location)
 
+    implementation (libs.accompanist.systemuicontroller)
+
 }

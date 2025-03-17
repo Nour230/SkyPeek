@@ -1,6 +1,7 @@
 package com.example.skypeek.data.remote
 
-import com.example.skypeek.data.models.WeatherResponse
+import com.example.skypeek.data.models.CurrentWeather
+import kotlinx.coroutines.flow.Flow
 
 
 interface RemoteDataSource {
@@ -8,5 +9,5 @@ interface RemoteDataSource {
         lat: Double,
         lon: Double,
         apiKey: String
-    ): WeatherResponse?
+    ): Flow<CurrentWeather>
 }
