@@ -2,11 +2,9 @@ package com.example.skypeek.composablescreens.home
 
 import android.location.Location
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import java.time.Instant
 import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,28 +19,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -60,23 +47,12 @@ import com.example.skypeek.BuildConfig
 import com.example.skypeek.R
 import com.example.skypeek.data.models.CurrentWeather
 import com.example.skypeek.data.models.ResponseState
-import com.example.skypeek.data.models.WeatherResponse
 import com.example.skypeek.ui.theme.white
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Location?>) {
     val currentWeather by homeViewModel.weather.collectAsStateWithLifecycle()
-
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.clearnight))
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = LottieConstants.IterateForever
-    )
-
 
     LaunchedEffect(locationState.value) {
         locationState.value?.let { location ->
@@ -88,37 +64,33 @@ fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Locatio
         }
     }
 
-    // Wrap the screen inside a Box with a background color
+    Image(
+        painter = painterResource(R.drawable.night2),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = Modifier.fillMaxSize()
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-    ) {
-        // Background Image
-        Image(
-            painter = painterResource(R.drawable.night2),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
+            .background(Color.Black.copy(alpha = 0.6f))
+    )
 
-        // Semi-transparent overlay
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.6f)) // Adjust alpha for transparency
-        )
-
-        Column(modifier = Modifier.padding(16.dp)) {
-            when(currentWeather){
-                is ResponseState.Error -> {
-                    Text(text = "Error: ${(currentWeather as ResponseState.Error).message}", color = white)
-                }
-                is ResponseState.Loading -> LoadingIndicatore()
-                is ResponseState.Success -> WeatherScreen((currentWeather as ResponseState.Success).data)
+    Column(modifier = Modifier.padding(16.dp)) {
+        when (currentWeather) {
+            is ResponseState.Error -> {
+                Text(
+                    text = "Error: ${(currentWeather as ResponseState.Error).message}",
+                    color = white
+                )
             }
+
+            is ResponseState.Loading -> LoadingIndicatore()
+            is ResponseState.Success -> WeatherScreen((currentWeather as ResponseState.Success).data)
+            is ResponseState.SuccessForecast -> Weather((currentWeather as ResponseState.SuccessForecast).data)
         }
     }
-
 }
 
 
@@ -303,75 +275,6 @@ fun WeatherDetailItem(icon: Int, label: String, value: String) {
     }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-@Composable
-fun DailyWeatherItem(weather: CurrentWeather, index: Int) {
-    val weatherItem = weather.list.getOrNull(index) ?: return
-    val mainWeather = weatherItem.main
-    val date = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(weatherItem.dt * 1000))
-
-    Card(
-        modifier = Modifier
-            .padding(8.dp)
-            .wrapContentHeight()
-            .wrapContentWidth()
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Image(
-                painter = painterResource(getWeatherIcon(weatherItem.weather.firstOrNull()?.main ?: "N/A")),
-                contentDescription = "Weather Icon",
-                modifier = Modifier.size(80.dp)
-            )
-
-            Text(
-                text = date,
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "${mainWeather.temp.toInt()}°C",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-
-@Composable
-fun HouerlyWeather(homeViewModel: HomeViewModel) {
-    val currentWeather by homeViewModel.weather.collectAsStateWithLifecycle()
-
-
-
-}
-
-
-@Composable
-private fun Weather(weather: CurrentWeather){
-    val snackBarHostState = remember { SnackbarHostState() }
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackBarHostState) }
-    ) { contentPadding ->
-        LazyRow(
-            modifier = Modifier.padding(contentPadding)
-        ) {
-            items(weather.size) { index ->
-                DailyWeatherItem(weather!!, index)
-            }
-        }
-    }
-}
-
-
-
-*/
 fun getWeatherIcon(condition: String): Int {
     return when (condition.lowercase()) {
         "clear" -> R.drawable.snow
@@ -383,9 +286,8 @@ fun getWeatherIcon(condition: String): Int {
 }
 
 
-
 @Composable
-private fun LoadingIndicatore(){
+fun LoadingIndicatore() {
     Box(
         modifier = Modifier
             .fillMaxSize()
