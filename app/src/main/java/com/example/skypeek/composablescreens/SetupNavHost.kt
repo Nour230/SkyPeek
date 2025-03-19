@@ -1,7 +1,9 @@
 package com.example.skypeek.composablescreens
 
 import android.location.Location
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.navigation.NavHostController
@@ -18,6 +20,7 @@ import com.example.skypeek.composablescreens.home.HomeScreen
 import com.example.skypeek.composablescreens.home.WeatherFactory
 import com.example.skypeek.composablescreens.utiles.LocalNavController
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun SetupNavHost(apiService: WeatherApiService,
                  locationState: MutableState<Location?>

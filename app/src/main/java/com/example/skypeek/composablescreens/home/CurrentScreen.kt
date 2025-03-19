@@ -2,10 +2,8 @@ package com.example.skypeek.composablescreens.home
 
 import android.location.Location
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,24 +38,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.skypeek.BuildConfig
 import com.example.skypeek.R
 import com.example.skypeek.data.models.CurrentWeather
 import com.example.skypeek.data.models.ResponseState
-import com.example.skypeek.ui.theme.white
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Location?>) {
     val currentWeather by homeViewModel.weather.collectAsStateWithLifecycle()
+    val currentHourlyWeather by homeViewModel.hourlyWeather.collectAsStateWithLifecycle()
 
     LaunchedEffect(locationState.value) {
         locationState.value?.let { location ->
             homeViewModel.getWeather(
+                location.latitude,
+                location.longitude,
+                BuildConfig.apiKeySafe
+            )
+        }
+    }
+
+    LaunchedEffect(locationState.value) {
+        locationState.value?.let { location ->
+            homeViewModel.getHourlyWeather(
                 location.latitude,
                 location.longitude,
                 BuildConfig.apiKeySafe
@@ -75,20 +83,61 @@ fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Locatio
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.6f))
-    )
+    ) {
+        LazyColumn {
+            // Current Weather Section
+            item {
+                when (currentWeather) {
+                    is ResponseState.Error -> {
+                        Text(
+                            text = "Error: ${(currentWeather as ResponseState.Error).message}",
+                            color = Color.White
+                        )
+                    }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        when (currentWeather) {
-            is ResponseState.Error -> {
-                Text(
-                    text = "Error: ${(currentWeather as ResponseState.Error).message}",
-                    color = white
-                )
+                    is ResponseState.Loading -> {
+                        LoadingIndicatore()
+                    }
+
+                    is ResponseState.Success -> {
+                        WeatherScreen((currentWeather as ResponseState.Success).data)
+                    }
+
+                    else -> {
+                        Log.i("TAG", "HomeScreen: Unexpected state -> $currentWeather")
+                    }
+                }
             }
 
-            is ResponseState.Loading -> LoadingIndicatore()
-            is ResponseState.Success -> WeatherScreen((currentWeather as ResponseState.Success).data)
-            is ResponseState.SuccessForecast -> Weather((currentWeather as ResponseState.SuccessForecast).data)
+            // Spacer to separate sections
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            // Hourly Weather Section
+            item {
+                when (currentHourlyWeather) {
+                    is ResponseState.Error -> {
+                        Text(
+                            text = "Error: ${(currentHourlyWeather as ResponseState.Error).message}",
+                            color = Color.White
+                        )
+                    }
+
+                    is ResponseState.Loading -> {
+                        LoadingIndicatore()
+                    }
+
+                    is ResponseState.SuccessForecast -> {
+                        Weather((currentHourlyWeather as ResponseState.SuccessForecast).data)
+                    }
+
+                    else -> {
+                        Log.i(
+                            "TAG",
+                            "HomeScreen: currentHourlyWeather type -> ${currentHourlyWeather::class.java.simpleName}"
+                        )
+                    }
+                }
+            }
         }
     }
 }

@@ -18,11 +18,13 @@ class HomeViewModel (private val repo:WeatherRepository):ViewModel(){
     private val mutableWeather = MutableStateFlow<ResponseState>(ResponseState.Loading)
     val weather  = mutableWeather.asStateFlow()
 
+    private val mutableHourlyWeather = MutableStateFlow<ResponseState>(ResponseState.Loading)
+    val hourlyWeather  = mutableHourlyWeather.asStateFlow()
+
     private val mutableError = MutableSharedFlow<String>()
     val error  = mutableError.asSharedFlow()
-//    init {
-//        getWeather()
-//    }
+
+
     fun getWeather(lat: Double, lon: Double, apiKey: String) {
         viewModelScope.launch {
             try {
@@ -33,13 +35,33 @@ class HomeViewModel (private val repo:WeatherRepository):ViewModel(){
                 }.collect{
                     mutableWeather.value = ResponseState.Success(it)
                 }
-                Log.d("HomeViewModel", "Weather loaded successfully: items")
             } catch (e: Exception) {
                 mutableError.emit(e.message.toString())
                 Log.e("HomeViewModel", "Error fetching weather: ${e.localizedMessage}")
             }
         }
     }
+
+
+    fun getHourlyWeather(lat: Double, lon: Double, apiKey: String) {
+        viewModelScope.launch {
+            try {
+                mutableHourlyWeather.value = ResponseState.Loading // 🔹 Force UI to detect change
+
+                val response = repo.fetchHourlyWeather(lat, lon, apiKey)
+                response.catch { ex ->
+                    Log.e("TAG", "getHourlyWeather: Error fetching weather -> ${ex.message}")
+                    mutableHourlyWeather.value = ResponseState.Error(ex)
+                    mutableError.emit(ex.message.toString())
+                }.collect {
+                    mutableHourlyWeather.value = ResponseState.SuccessForecast(it) // ✅ Success state
+                }
+            } catch (e: Exception) {
+                mutableError.emit(e.message.toString())
+            }
+        }
+    }
+
 
 }
 

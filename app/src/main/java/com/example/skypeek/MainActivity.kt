@@ -146,11 +146,11 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun WeatherApp(apiService: WeatherApiService, locationState: MutableState<Location?>) {
+
         val navController = rememberNavController()
         CompositionLocalProvider(LocalNavController provides navController) {
             val currentBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = currentBackStackEntry?.destination?.route ?: ScreensRoute.SplashScreen.route
-            Log.i("TAG", "WeatherApp: $currentRoute")
             var selectedIndex by remember { mutableStateOf(0) }
             val navigationBarItems = NavigationBarItems.entries.toTypedArray()
 
@@ -160,19 +160,18 @@ class MainActivity : ComponentActivity() {
             // Update showBottomBar based on the current route
             LaunchedEffect(currentRoute) {
                 showBottomBar = currentRoute != ScreensRoute.SplashScreen.route
-                Log.i("TAG", "WeatherApp: $showBottomBar")
             }
 
             Surface (
                 modifier = Modifier
                     .fillMaxSize()
                     .customShadow(
-                    color = Purple40,
-                    alpha = 0.5f,
-                    shadowRadius = 16.dp,
-                    borderRadius = 42.dp,
-                    offsetY = (40).dp
-                )
+                        color = Purple40,
+                        alpha = 0.5f,
+                        shadowRadius = 16.dp,
+                        borderRadius = 42.dp,
+                        offsetY = (40).dp
+                    )
             ){
                 Scaffold(
                 bottomBar = {

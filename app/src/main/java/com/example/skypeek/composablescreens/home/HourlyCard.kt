@@ -1,10 +1,18 @@
 package com.example.skypeek.composablescreens.home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -25,60 +34,72 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.skypeek.data.models.ResponseState
+import com.example.skypeek.data.models.WeatherData
 import com.example.skypeek.data.models.WeatherResponse
+import com.example.skypeek.ui.theme.black
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-
 @Composable
- fun Weather(weather: WeatherResponse){
-    val snackBarHostState = remember { SnackbarHostState() }
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackBarHostState) }
-    ) { contentPadding ->
+fun Weather(weather: WeatherResponse) {
+    val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+    val currentDayWeather = weather.list.filter {
+        it.dt_txt.startsWith(currentDate)
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+    ) {
         LazyRow(
-            modifier = Modifier.padding(contentPadding)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(weather.list.size) { index ->
-                DailyWeatherItem(weather, index)
+            items(currentDayWeather.size) {
+                DailyWeatherItem(currentDayWeather[it])
             }
         }
     }
 }
 
+
 @Composable
-fun DailyWeatherItem(weather: WeatherResponse, index: Int) {
-    val weatherItem = weather.list.getOrNull(index) ?: return
-    val mainWeather = weatherItem.main
-    val date = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(weatherItem.dt * 1000))
+fun DailyWeatherItem(weather: WeatherData) {
+    val mainWeather = weather.main
+    val date = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(weather.dt * 1000))
 
     Card(
         modifier = Modifier
             .padding(8.dp)
-            .wrapContentHeight()
-            .wrapContentWidth()
+            .width(100.dp)
+            .height(150.dp)
+            .alpha(0.8f)
+
     ) {
         Column(
+            modifier = Modifier
+                .padding(4.dp)
+                .fillMaxSize(), // Safe because the parent Card has a fixed size
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(getWeatherIcon(weatherItem.weather.firstOrNull()?.main ?: "N/A")),
+                painter = painterResource(getWeatherIcon(weather.weather.firstOrNull()?.main ?: "N/A")),
                 contentDescription = "Weather Icon",
-                modifier = Modifier.size(80.dp)
+                modifier = Modifier.size(60.dp)
             )
-
             Text(
-                text = date,
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                text = date.take(10),
+                fontSize = 14.sp,
+                color = black
             )
             Text(
                 text = "${mainWeather.temp.toInt()}°C",
-                color = Color.White,
-                fontSize = 18.sp,
+                color = black,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
         }
