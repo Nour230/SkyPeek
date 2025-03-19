@@ -59,9 +59,15 @@ fun Weather(weather: WeatherResponse) {
 fun DailyWeatherItem(weather: WeatherData) {
     val mainWeather = weather.main
     val date = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(weather.dt * 1000))
+    val isAM = date.contains("AM")
 // Load Lottie animation dynamically
     val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(getWeatherLottie(weather.weather[0].main))
+        LottieCompositionSpec.RawRes(
+            if (isAM)
+                getWeatherLottie(weather.weather[0].main)
+            else
+                getNightWeatherLottie(weather.weather[0].main)
+        )
     )
     Card(
         modifier = Modifier

@@ -91,11 +91,19 @@ fun WeatherForecastScreen(weather: WeatherResponse) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WeatherItem(weather: WeatherData) {
+    val hour = weather.dt_txt.split(" ")[1].split(":")[0].toInt() // Extract hour from dt_txt
+    val isDayTime = hour in 0..12 // Consider 6 AM to 6 PM as day time
+
     val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(getWeatherLottie(weather.weather[0].main))
+        LottieCompositionSpec.RawRes(
+            if (isDayTime) getWeatherLottie(weather.weather[0].main)
+            else getNightWeatherLottie(weather.weather[0].main)
+        )
     )
+
     val dayName = getDayName(weather.dt_txt)
     val mainWeather = weather.main
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -147,6 +155,7 @@ fun WeatherItem(weather: WeatherData) {
         )
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 private fun getDayName(dateString: String): String {

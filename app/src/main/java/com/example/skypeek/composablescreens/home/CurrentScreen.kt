@@ -155,15 +155,22 @@ fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Locatio
 @Composable
 fun WeatherScreen(currentweather: CurrentWeather) {
     val city = currentweather.name
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(getWeatherLottie(currentweather.weather[0].main))
-    )
+
     val mainWeather = currentweather.main
     val nyZoneId = ZoneId.of("Africa/Cairo")
     // Convert timestamp to ZonedDateTime in New York time zone
     val dateTimeInNY = Instant.ofEpochSecond(currentweather.dt.toLong()).atZone(nyZoneId)
+    val isAM = dateTimeInNY.hour < 12
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(
+            if (isAM)
+                getWeatherLottie(currentweather.weather[0].main)
+            else
+                getNightWeatherLottie(currentweather.weather[0].main)
+        )
+    )
     // Format the output
-    val formattedDate = dateTimeInNY.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+    val formattedDate = dateTimeInNY.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"))
     val weather = currentweather.weather
 
 
@@ -339,6 +346,17 @@ fun getWeatherLottie(weatherCondition: String): Int {
         "rain" -> R.raw.rain
         "snow" -> R.raw.snow
         "thunderstorm" -> R.raw.thunderstorm
+        else -> R.raw.wind_animation
+    }
+}
+
+fun getNightWeatherLottie(weatherCondition: String): Int {
+    return when (weatherCondition.lowercase()) {
+        "clear" -> R.raw.clear_night
+        "clouds" -> R.raw.cloud_night
+        "rain" -> R.raw.rain
+        "snow" -> R.raw.snow
+        "thunderstorm" -> R.raw.thunderstorm_night
         else -> R.raw.wind_animation
     }
 }
