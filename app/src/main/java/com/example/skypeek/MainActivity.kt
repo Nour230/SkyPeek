@@ -11,6 +11,7 @@ import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloatAsState
@@ -28,7 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -47,7 +47,6 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.SideEffect
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -62,7 +61,6 @@ import com.example.skypeek.data.remote.WeatherApiService
 import com.example.skypeek.ui.screenshelper.customShadow
 import com.example.skypeek.ui.theme.Purple40
 import androidx.compose.runtime.*
-import com.example.skypeek.ui.theme.backgroundColor
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
@@ -72,7 +70,6 @@ import com.example.skypeek.ui.theme.black
 import com.example.skypeek.ui.theme.lightBlue
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.secbackgroundColor
-import com.example.skypeek.ui.theme.semonelight
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 
 class MainActivity : ComponentActivity() {
@@ -144,6 +141,7 @@ class MainActivity : ComponentActivity() {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     fun WeatherApp(apiService: WeatherApiService, locationState: MutableState<Location?>) {
 

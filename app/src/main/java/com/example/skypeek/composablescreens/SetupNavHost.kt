@@ -2,11 +2,9 @@ package com.example.skypeek.composablescreens
 
 import android.location.Location
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.skypeek.composablescreens.home.HomeViewModel
@@ -15,7 +13,6 @@ import com.example.skypeek.data.remote.WeatherApiService
 import com.example.skypeek.data.remote.WeatherRemoteDataSource
 import com.example.skypeek.data.repository.WeatherRepositoryImpl
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import com.example.skypeek.composablescreens.home.HomeScreen
 import com.example.skypeek.composablescreens.home.WeatherFactory
 import com.example.skypeek.composablescreens.utiles.LocalNavController

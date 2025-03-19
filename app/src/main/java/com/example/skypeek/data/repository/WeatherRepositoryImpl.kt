@@ -1,7 +1,6 @@
 package com.example.skypeek.data.repository
 
 
-import android.util.Log
 import com.example.skypeek.data.models.CurrentWeather
 import com.example.skypeek.data.models.WeatherResponse
 import com.example.skypeek.data.remote.RemoteDataSource
