@@ -76,6 +76,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var locationHelper: LocationHelper
     lateinit var locationState: MutableState<Location?>
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

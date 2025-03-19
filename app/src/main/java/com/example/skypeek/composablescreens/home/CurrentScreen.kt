@@ -38,6 +38,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.airbnb.lottie.LottieComposition
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.skypeek.BuildConfig
 import com.example.skypeek.R
 import com.example.skypeek.data.models.CurrentWeather
@@ -85,6 +90,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Locatio
             .background(Color.Black.copy(alpha = 0.6f))
     ) {
         LazyColumn {
+
             // Current Weather Section
             item {
                 when (currentWeather) {
@@ -128,6 +134,8 @@ fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Locatio
 
                     is ResponseState.SuccessForecast -> {
                         Weather((currentHourlyWeather as ResponseState.SuccessForecast).data)
+                        WeatherForecastScreen((currentHourlyWeather as ResponseState.SuccessForecast).data)
+
                     }
 
                     else -> {
@@ -146,7 +154,10 @@ fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Locatio
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WeatherScreen(currentweather: CurrentWeather) {
-    val city = currentweather.sys.country
+    val city = currentweather.name
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(getWeatherLottie(currentweather.weather[0].main))
+    )
     val mainWeather = currentweather.main
     val nyZoneId = ZoneId.of("Africa/Cairo")
     // Convert timestamp to ZonedDateTime in New York time zone
@@ -154,6 +165,8 @@ fun WeatherScreen(currentweather: CurrentWeather) {
     // Format the output
     val formattedDate = dateTimeInNY.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     val weather = currentweather.weather
+
+
 
     Box(
         modifier = Modifier
@@ -173,9 +186,9 @@ fun WeatherScreen(currentweather: CurrentWeather) {
             // Weather Icon and Temperature
             WeatherMainInfo(
                 temperature = mainWeather.temp.toInt(),
-                weatherIcon = R.drawable.sun_rain,
                 desc = weather.firstOrNull()?.description ?: "N/A",
-                cloud = currentweather.clouds.all.toString()
+                cloud = currentweather.clouds.all.toString(),
+                composition = composition
             )
 
             Spacer(modifier = Modifier.height(22.dp))
@@ -192,37 +205,19 @@ fun WeatherScreen(currentweather: CurrentWeather) {
     }
 }
 
-@Composable
-fun TopBar(location: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 1.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.LocationOn,
-            contentDescription = "Location",
-            tint = Color.White,
-            modifier = Modifier.size(21.dp)
-        )
-        Text(
-            text = location,
-            color = Color.White,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
 
 @Composable
-fun WeatherMainInfo(temperature: Int, weatherIcon: Int, desc: String, cloud: String) {
+fun WeatherMainInfo(
+    temperature: Int, composition:
+    LottieComposition?, desc: String, cloud: String
+) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Image(
-            painter = painterResource(id = weatherIcon),
-            contentDescription = "Weather Icon",
-            modifier = Modifier.size(80.dp)
+        LottieAnimation(
+            composition = composition,
+            iterations = LottieConstants.IterateForever,
+            modifier = Modifier
+                .width(200.dp)
+                .height(200.dp)
         )
         Text(
             text = "$temperature°C",
@@ -324,16 +319,6 @@ fun WeatherDetailItem(icon: Int, label: String, value: String) {
     }
 }
 
-fun getWeatherIcon(condition: String): Int {
-    return when (condition.lowercase()) {
-        "clear" -> R.drawable.snow
-        "clouds" -> R.drawable.snow
-        "rain" -> R.drawable.sun_rain
-        "thunderstorm" -> R.drawable.wind
-        else -> R.drawable.sun_rain
-    }
-}
-
 
 @Composable
 fun LoadingIndicatore() {
@@ -343,5 +328,41 @@ fun LoadingIndicatore() {
             .wrapContentSize()
     ) {
         CircularProgressIndicator()
+    }
+}
+
+
+fun getWeatherLottie(weatherCondition: String): Int {
+    return when (weatherCondition.lowercase()) {
+        "clear" -> R.raw.sun_animation // Replace with actual Lottie file in res/raw
+        "clouds" -> R.raw.cloud
+        "rain" -> R.raw.rain
+        "snow" -> R.raw.snow
+        "thunderstorm" -> R.raw.thunderstorm
+        else -> R.raw.wind_animation
+    }
+}
+
+@Composable
+fun TopBar(location: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 1.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.LocationOn,
+            contentDescription = "Location",
+            tint = Color.White,
+            modifier = Modifier.size(21.dp)
+        )
+        Text(
+            text = location,
+            color = Color.White,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }

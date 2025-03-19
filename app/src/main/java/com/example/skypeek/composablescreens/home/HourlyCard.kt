@@ -1,6 +1,5 @@
 package com.example.skypeek.composablescreens.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,19 +7,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.skypeek.data.models.WeatherData
 import com.example.skypeek.data.models.WeatherResponse
 import com.example.skypeek.ui.theme.black
@@ -30,7 +32,7 @@ import java.util.Locale
 
 @Composable
 fun Weather(weather: WeatherResponse) {
-    val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+    val currentDate = SimpleDateFormat("yyyy-MM-dd ", Locale.getDefault()).format(Date())
     val currentDayWeather = weather.list.filter {
         it.dt_txt.startsWith(currentDate)
     }
@@ -56,8 +58,11 @@ fun Weather(weather: WeatherResponse) {
 @Composable
 fun DailyWeatherItem(weather: WeatherData) {
     val mainWeather = weather.main
-    val date = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(weather.dt * 1000))
-
+    val date = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(weather.dt * 1000))
+// Load Lottie animation dynamically
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(getWeatherLottie(weather.weather[0].main))
+    )
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -73,10 +78,12 @@ fun DailyWeatherItem(weather: WeatherData) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Image(
-                painter = painterResource(getWeatherIcon(weather.weather.firstOrNull()?.main ?: "N/A")),
-                contentDescription = "Weather Icon",
-                modifier = Modifier.size(60.dp)
+            LottieAnimation(
+                composition = composition,
+                iterations = LottieConstants.IterateForever,
+                modifier = Modifier
+                    .width(50.dp)
+                    .height(50.dp)
             )
             Text(
                 text = date.take(10),
