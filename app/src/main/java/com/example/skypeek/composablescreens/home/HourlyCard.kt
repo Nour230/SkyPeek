@@ -1,5 +1,6 @@
 package com.example.skypeek.composablescreens.home
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +31,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@Composable
+/*@Composable
 fun Weather(weather: WeatherResponse) {
     val currentDate = SimpleDateFormat("yyyy-MM-dd ", Locale.getDefault()).format(Date())
     val currentDayWeather = weather.list.filter {
@@ -49,6 +50,40 @@ fun Weather(weather: WeatherResponse) {
         ) {
             items(currentDayWeather.size) {
                 DailyWeatherItem(currentDayWeather[it])
+            }
+        }
+    }
+}*/
+
+@Composable
+fun Weather(weather: WeatherResponse) {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+    val currentTime = System.currentTimeMillis() // Current time in milliseconds
+    val next24HoursTime = currentTime + (24 * 60 * 60 * 1000) // 24 hours ahead in milliseconds
+
+    // Filter the weather list for the next 24 hours using dt_txt
+    val next24HoursWeather = weather.list.filter { forecast ->
+        try {
+            val forecastTime = dateFormat.parse(forecast.dt_txt)?.time ?: 0L
+            forecastTime in currentTime..next24HoursTime
+        } catch (e: Exception) {
+            false // If parsing fails, ignore this entry
+        }
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+    ) {
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(next24HoursWeather.size) {
+                DailyWeatherItem(next24HoursWeather[it])
             }
         }
     }
@@ -87,6 +122,7 @@ fun DailyWeatherItem(weather: WeatherData) {
             LottieAnimation(
                 composition = composition,
                 iterations = LottieConstants.IterateForever,
+                speed = 2.0f,
                 modifier = Modifier
                     .width(50.dp)
                     .height(50.dp)

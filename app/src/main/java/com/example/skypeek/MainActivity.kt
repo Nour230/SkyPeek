@@ -250,9 +250,9 @@ class MainActivity : ComponentActivity() {
 
     enum class NavigationBarItems(val icon: ImageVector, val route: String) {
         Home(Icons.Filled.Home, ScreensRoute.HomeScreen.route),
-        Search(Icons.Filled.Favorite, "search"),
+        Search(Icons.Filled.Favorite, "fav"),
         Alarm(Icons.Filled.Call, "alarm"),
-        Settings(Icons.Filled.Settings, "settings")
+        Settings(Icons.Filled.Settings, "setting")
     }
 
     fun Modifier.noRippleClickableWithVibration(

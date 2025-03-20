@@ -138,6 +138,7 @@ fun WeatherItem(weather: WeatherData) {
             LottieAnimation(
                 composition = composition,
                 iterations = LottieConstants.IterateForever,
+                speed = 2.0f,
                 modifier = Modifier
                     .width(50.dp)
                     .height(50.dp)

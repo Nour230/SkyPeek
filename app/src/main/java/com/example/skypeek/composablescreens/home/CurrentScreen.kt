@@ -222,6 +222,7 @@ fun WeatherMainInfo(
         LottieAnimation(
             composition = composition,
             iterations = LottieConstants.IterateForever,
+            speed = 2.0f,
             modifier = Modifier
                 .width(200.dp)
                 .height(200.dp)

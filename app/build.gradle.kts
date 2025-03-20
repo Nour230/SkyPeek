@@ -97,4 +97,8 @@ dependencies {
 
     implementation (libs.accompanist.systemuicontroller)
 
+    // Android Maps Compose composables for the Maps SDK for Android
+    implementation(libs.maps.compose.v2140)
+    implementation(libs.play.services.maps)
+
 }
