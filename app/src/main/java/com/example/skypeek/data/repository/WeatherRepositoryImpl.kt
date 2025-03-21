@@ -8,16 +8,17 @@ import kotlinx.coroutines.flow.Flow
 
 class WeatherRepositoryImpl(private val remoteDataSource: RemoteDataSource) : WeatherRepository {
 
-    override suspend fun fetchWeather(lat: Double, lon: Double, apiKey: String): Flow<CurrentWeather> {
-        return remoteDataSource.getDailyWeather(lat, lon, apiKey)
+    override suspend fun fetchWeather(lat: Double, lon: Double, apiKey: String, units: String): Flow<CurrentWeather> {
+        return remoteDataSource.getDailyWeather(lat, lon, apiKey, units)
     }
 
     override suspend fun fetchHourlyWeather(
         lat: Double,
         lon: Double,
-        apiKey: String
+        apiKey: String,
+        units: String
     ): Flow<WeatherResponse> {
-        return remoteDataSource.getHourlyWeather(lat, lon, apiKey)
+        return remoteDataSource.getHourlyWeather(lat, lon, apiKey,units)
     }
 
 

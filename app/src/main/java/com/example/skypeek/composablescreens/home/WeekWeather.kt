@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,6 +35,9 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.skypeek.R
+import com.example.skypeek.composablescreens.utiles.enums.Temperature
+import com.example.skypeek.composablescreens.utiles.getFromSharedPrefrence
+import com.example.skypeek.composablescreens.utiles.helpers.setUnitSymbol
 import com.example.skypeek.data.models.WeatherData
 import com.example.skypeek.data.models.WeatherResponse
 import com.example.skypeek.ui.theme.black
@@ -81,7 +85,9 @@ fun WeatherForecastScreen(weather: WeatherResponse) {
             .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 0.dp)
     ) {
         averageData.forEach { weather ->
-            WeatherItem(weather)
+            WeatherItem(weather,
+                units = getFromSharedPrefrence(LocalContext.current, "temperature") ?: Temperature.CELSIUS.toString()
+            )
         }
     }
      Spacer(modifier = Modifier.height(24.dp))
@@ -90,7 +96,8 @@ fun WeatherForecastScreen(weather: WeatherResponse) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun WeatherItem(weather: WeatherData) {
+fun WeatherItem(weather: WeatherData,units:String) {
+    val tempUnit = setUnitSymbol(units)
     val hour = weather.dt_txt.split(" ")[1].split(":")[0].toInt() // Extract hour from dt_txt
     val isDayTime = hour in 0..12 // Consider 6 AM to 6 PM as day time
 
@@ -131,10 +138,6 @@ fun WeatherItem(weather: WeatherData) {
                     fontSize = 18.sp
                 )
             }
-            Text(
-                text = "${mainWeather.temp_max.toInt()}°",
-                color = black
-            )
             LottieAnimation(
                 composition = composition,
                 iterations = LottieConstants.IterateForever,
@@ -144,7 +147,7 @@ fun WeatherItem(weather: WeatherData) {
                     .height(50.dp)
             )
             Text(
-                text = "${mainWeather.temp_min.toInt()}°",
+                text = "${mainWeather.temp_max.toInt()} $tempUnit / ${mainWeather.temp_min.toInt()} $tempUnit",
                 color = black
             )
             Text(text = weather.weather[0].main, color = black)

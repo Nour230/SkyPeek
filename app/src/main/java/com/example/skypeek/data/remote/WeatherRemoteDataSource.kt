@@ -12,17 +12,19 @@ class WeatherRemoteDataSource(private val weatherApiService: WeatherApiService) 
     override suspend fun getDailyWeather(
         lat: Double,
         lon: Double,
-        apiKey: String
+        apiKey: String,
+        units: String
     ): Flow<CurrentWeather> {
-        return flowOf(weatherApiService.getCurrentWeatherData(lat, lon, apiKey).body()) as Flow<CurrentWeather>
+        return flowOf(weatherApiService.getCurrentWeatherData(lat, lon, apiKey,units).body()) as Flow<CurrentWeather>
     }
 
     override suspend fun getHourlyWeather(
         lat: Double,
         lon: Double,
-        apiKey: String
+        apiKey: String,
+        units: String
     ): Flow<WeatherResponse> = flow {
-        val response = weatherApiService.getHourlyWeatherData(lat, lon, apiKey)
+        val response = weatherApiService.getHourlyWeatherData(lat, lon, apiKey,units)
         if (response.isSuccessful && response.body() != null) {
             Log.d("TAG", "getHourlyWeather: ${response.body()}")
             emit(response.body()!!)
