@@ -63,7 +63,7 @@ fun SetupNavHost(apiService: WeatherApiService,
             SettingScreen(settingViewModel)
         }
         composable(ScreensRoute.FavScreen.route) {
-            FavScreen(locationState)
+            FavScreen()
         }
         composable(ScreensRoute.MapScreen.route) {
             MapScreen(mapViewModel,locationState)
