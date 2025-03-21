@@ -17,15 +17,15 @@ import com.example.skypeek.composablescreens.home.HomeScreen
 import com.example.skypeek.composablescreens.home.WeatherFactory
 import com.example.skypeek.composablescreens.utiles.LocalNavController
 import com.example.skypeek.composablescreens.fav.FavScreen
-import com.example.skypeek.composablescreens.fav.MapScreen
+import com.example.skypeek.composablescreens.fav.map.MapScreen
 import com.example.skypeek.composablescreens.settings.SettingScreen
 import com.example.skypeek.composablescreens.settings.SettingsViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun SetupNavHost(apiService: WeatherApiService,
-                 locationState: MutableState<Location?>
-                 ) {
+                 locationState: MutableState<Location?>,
+) {
     val navController = LocalNavController.current
     val remoteDataSource = WeatherRemoteDataSource(apiService)
     val weatherRepository = WeatherRepositoryImpl(remoteDataSource)

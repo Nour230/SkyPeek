@@ -19,14 +19,18 @@ loggingInterceptor = "4.9.3"
 lottieCompose = "6.0.0"
 mapsCompose = "6.4.1"
 mapsComposeVersion = "2.14.0"
+material = "1.12.0"
 material3 = "1.3.1"
 navigationCompose = "2.8.8"
+placesCompose = "0.1.3"
+placesVersion = "3.4.0"
 playServicesLocation = "21.1.0"
 playServicesLocationVersion = "21.0.1"
 playServicesMaps = "19.1.0"
 playServicesMapsVersion = "18.2.0"
 retrofit = "2.11.0"
 runtimeLivedata = "1.0.0"
+places = "4.2.0"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -56,12 +60,16 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 maps-compose-v2114 = { module = "com.google.maps.android:maps-compose", version.ref = "googleMapsCompose" }
 maps-compose-v2140 = { module = "com.google.maps.android:maps-compose", version.ref = "mapsComposeVersion" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+places-compose = { module = "com.google.maps.android:places-compose", version.ref = "placesCompose" }
+places-v340 = { module = "com.google.android.libraries.places:places", version.ref = "placesVersion" }
 play-services-location = { module = " com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 play-services-location-v2101 = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocationVersion" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 play-services-maps-v1820 = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMapsVersion" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+places = { group = "com.google.android.libraries.places", name = "places", version.ref = "places" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

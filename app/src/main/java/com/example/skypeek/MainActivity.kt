@@ -71,6 +71,7 @@ import com.example.skypeek.ui.theme.lightBlue
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.secbackgroundColor
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
+import com.google.android.libraries.places.api.Places
 
 class MainActivity : ComponentActivity() {
     private lateinit var locationHelper: LocationHelper
@@ -79,6 +80,10 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Initialize Places API
+        if (!Places.isInitialized()) {
+            Places.initialize(applicationContext,"AIzaSyCaj10hgcwGaosoYRyv79ppLviFJ9eMNmM")
+        }
         enableEdgeToEdge()
 
         hideSystemUI()

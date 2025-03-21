@@ -47,7 +47,6 @@ class HomeViewModel (private val repo:WeatherRepository):ViewModel(){
 
 
     fun getHourlyWeather(lat: Double, lon: Double, apiKey: String,units:String) {
-        Log.d("TAG", "getHourlyWeather: $units ")
         val tempUnite = convertUnit(units)
         viewModelScope.launch {
             try {
