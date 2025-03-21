@@ -5,40 +5,41 @@ import android.annotation.SuppressLint
 import android.location.Location
 import android.util.Log
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.*
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.AutocompletePrediction
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.net.FetchPlaceRequest
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
-import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
-fun MapScreen(locationViewModel: MutableState<Location?>) {
-    val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        if (!Places.isInitialized()) {
-            Places.initialize(context, "AIzaSyCaj10hgcwGaosoYRyv79ppLviFJ9eMNmM") // Replace with your actual API key
-        }
-    }
-
-    val placesClient = remember { Places.createClient(context) }
-
-    var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-    var predictions by remember { mutableStateOf<List<AutocompletePrediction>>(emptyList()) }
+fun MapScreen(viewModel: MapViewModel, locationState: MutableState<Location?>) {
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val predictions by viewModel.predictions.collectAsStateWithLifecycle()
+    val location by viewModel.location.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -46,12 +47,7 @@ fun MapScreen(locationViewModel: MutableState<Location?>) {
     ) {
         OutlinedTextField(
             value = searchQuery,
-            onValueChange = {
-                searchQuery = it
-                fetchPredictions(it.text, placesClient) { newPredictions ->
-                    predictions = newPredictions
-                }
-            },
+            onValueChange = { viewModel.onSearchQueryChanged(it) },
             label = { Text("Search Places") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -65,39 +61,43 @@ fun MapScreen(locationViewModel: MutableState<Location?>) {
                     .fillMaxWidth()
                     .padding(8.dp)
                     .clickable {
-                        fetchPlaceDetails(prediction.placeId, placesClient, locationViewModel)
-                        searchQuery = TextFieldValue(prediction.getPrimaryText(null).toString())
-                        predictions = emptyList()
+                        viewModel.onPlaceSelected(prediction.placeId)
                     }
             )
         }
 
-        GoogleMapScreen(locationViewModel)
+        GoogleMapScreen(location, locationState)
     }
 }
 
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun GoogleMapScreen(location: MutableState<Location?>) {
-    val permissionState = rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
+fun GoogleMapScreen(location: Location?, locationState: MutableState<Location?>) {
+    val permissionState =
+        rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
     LaunchedEffect(Unit) {
         permissionState.launchPermissionRequest()
     }
-    MapView(location, )
+    MapView(location, locationState)
 }
 
 @SuppressLint("MissingPermission")
 @Composable
-fun MapView(location: MutableState<Location?>) {
+fun MapView(location: Location?, locationState: MutableState<Location?>) {
+
     val cameraPositionState = rememberCameraPositionState()
 
     // Initial marker position (default or first location)
     val markerState = rememberMarkerState(
-        position = location.value?.let { LatLng(it.latitude, it.longitude) } ?: LatLng(0.0, 0.0)
+        position = LatLng(
+            location?.latitude ?: locationState.value?.latitude ?: 0.0, // Use locationState if location is null
+            location?.longitude ?: locationState.value?.longitude ?: 0.0 // Use locationState if location is null
+        )
     )
 
-    LaunchedEffect(location.value) {
-        location.value?.let {
+    LaunchedEffect(location) {
+        location?.let {
             val newLatLng = LatLng(it.latitude, it.longitude)
 
             // Update marker position
@@ -113,7 +113,10 @@ fun MapView(location: MutableState<Location?>) {
             modifier = Modifier.weight(1f),
             cameraPositionState = cameraPositionState,
             properties = MapProperties(isMyLocationEnabled = true),
-            uiSettings = MapUiSettings(zoomControlsEnabled = true)
+            uiSettings = MapUiSettings(zoomControlsEnabled = true),
+            onMapClick = { latLng ->
+                markerState.position = latLng
+            }
         ) {
             Marker(
                 state = markerState, // Marker updates dynamically
@@ -132,10 +135,12 @@ fun MapView(location: MutableState<Location?>) {
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                location.value?.let {
-                    Text("Latitude: ${it.latitude}")
-                    Text("Longitude: ${it.longitude}")
-                }
+                Text(
+                    text = "Latitude: ${markerState.position.latitude}",
+                )
+                Text(
+                    text = "Longitude: ${markerState.position.longitude}",
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(onClick = { /* Add to Favorites Logic */ }) {
                     Text("Add to Favorites")
@@ -145,34 +150,3 @@ fun MapView(location: MutableState<Location?>) {
     }
 }
 
-private fun fetchPlaceDetails(placeId: String, placesClient: PlacesClient, locationViewModel: MutableState<Location?>) {
-    val placeFields = listOf(Place.Field.LAT_LNG)
-    val request = FetchPlaceRequest.builder(placeId, placeFields).build()
-
-    placesClient.fetchPlace(request).addOnSuccessListener { response ->
-        response.place.latLng?.let { latLng ->
-            locationViewModel.value = Location("").apply {
-                latitude = latLng.latitude
-                longitude = latLng.longitude
-            }
-        }
-    }.addOnFailureListener { exception ->
-        Log.e("PlacesAutocomplete", "Error fetching place details: ${exception.message}")
-    }
-}
-private fun fetchPredictions(query: String, placesClient: PlacesClient, onResults: (List<AutocompletePrediction>) -> Unit) {
-    if (query.isEmpty()) return // Avoid unnecessary API calls
-
-    val request = FindAutocompletePredictionsRequest.builder()
-        .setQuery(query)
-        .build()
-
-    placesClient.findAutocompletePredictions(request)
-        .addOnSuccessListener { response ->
-            Log.d("TAG", "Predictions fetched: ${response.autocompletePredictions.size}")
-            onResults(response.autocompletePredictions)
-        }
-        .addOnFailureListener { exception ->
-            Log.e("TAG", "Error: ${exception.message}")
-        }
-}
