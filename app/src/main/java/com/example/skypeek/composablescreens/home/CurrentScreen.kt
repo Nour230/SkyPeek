@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,9 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.skypeek.BuildConfig
 import com.example.skypeek.R
+import com.example.skypeek.composablescreens.utiles.getFromSharedPrefrence
+import com.example.skypeek.composablescreens.utiles.helpers.setUnitSymbol
+import com.example.skypeek.composablescreens.utiles.helpers.setWindSpeedSymbol
 import com.example.skypeek.data.models.CurrentWeather
 import com.example.skypeek.data.models.ResponseState
 import java.time.Instant
@@ -54,25 +58,29 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Location?>) {
+    val context = LocalContext.current
     val currentWeather by homeViewModel.weather.collectAsStateWithLifecycle()
     val currentHourlyWeather by homeViewModel.hourlyWeather.collectAsStateWithLifecycle()
 
     LaunchedEffect(locationState.value) {
         locationState.value?.let { location ->
-            homeViewModel.getWeather(
-                location.latitude,
-                location.longitude,
-                BuildConfig.apiKeySafe
-            )
+                homeViewModel.getWeather(
+                    location.latitude,
+                    location.longitude,
+                    BuildConfig.apiKeySafe,
+                    getFromSharedPrefrence(context,"temperature") ?: "Celsius"
+                )
+            }
         }
-    }
+
 
     LaunchedEffect(locationState.value) {
         locationState.value?.let { location ->
             homeViewModel.getHourlyWeather(
                 location.latitude,
                 location.longitude,
-                BuildConfig.apiKeySafe
+                BuildConfig.apiKeySafe,
+                getFromSharedPrefrence(context,"temperature") ?: "Celsius"
             )
         }
     }
@@ -195,7 +203,8 @@ fun WeatherScreen(currentweather: CurrentWeather) {
                 temperature = mainWeather.temp.toInt(),
                 desc = weather.firstOrNull()?.description ?: "N/A",
                 cloud = currentweather.clouds.all.toString(),
-                composition = composition
+                composition = composition,
+                units = getFromSharedPrefrence(LocalContext.current,"temperature") ?: "Celsius"
             )
 
             Spacer(modifier = Modifier.height(22.dp))
@@ -206,7 +215,8 @@ fun WeatherScreen(currentweather: CurrentWeather) {
                 humidity = mainWeather.humidity,
                 windSpeed = currentweather.wind.speed.toString(),
                 pressure = mainWeather.pressure.toString(),
-                date = formattedDate
+                date = formattedDate,
+                units = getFromSharedPrefrence(LocalContext.current,"windspeed")?:"m/s"
             )
         }
     }
@@ -216,8 +226,10 @@ fun WeatherScreen(currentweather: CurrentWeather) {
 @Composable
 fun WeatherMainInfo(
     temperature: Int, composition:
-    LottieComposition?, desc: String, cloud: String
+    LottieComposition?, desc: String, cloud: String ,units:String
 ) {
+    val tempUnit = setUnitSymbol(units)
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         LottieAnimation(
             composition = composition,
@@ -228,7 +240,7 @@ fun WeatherMainInfo(
                 .height(200.dp)
         )
         Text(
-            text = "$temperature°C",
+            text = "$temperature $tempUnit",
             color = Color.White,
             fontSize = 64.sp,
             fontWeight = FontWeight.Bold
@@ -253,8 +265,10 @@ fun WeatherDetails(
     humidity: Int,
     windSpeed: String,
     pressure: String,
-    date: String
+    date: String,
+    units: String
 ) {
+    val windUnit = setWindSpeedSymbol(units)
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = date,
@@ -294,7 +308,7 @@ fun WeatherDetails(
                     .background(Color.White.copy(alpha = 0.5f))
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                WeatherDetailItem(icon = R.drawable.wind, label = "Wind", value = windSpeed)
+                WeatherDetailItem(icon = R.drawable.wind, label = "Wind", value = "$windSpeed $windUnit")
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(
                     modifier = Modifier.width(180.dp),

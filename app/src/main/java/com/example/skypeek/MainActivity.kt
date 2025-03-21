@@ -54,8 +54,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.skypeek.composablescreens.ScreensRoute
 import com.example.skypeek.composablescreens.SetupNavHost
 import com.example.skypeek.composablescreens.utiles.LocalNavController
-import com.example.skypeek.composablescreens.utiles.LocationHelper
-import com.example.skypeek.composablescreens.utiles.REQUEST_LOCATION_PERMISSION
+import com.example.skypeek.composablescreens.utiles.helpers.LocationHelper
+import com.example.skypeek.composablescreens.utiles.helpers.REQUEST_LOCATION_PERMISSION
 import com.example.skypeek.data.remote.RetrofitHelper.weatherApiService
 import com.example.skypeek.data.remote.WeatherApiService
 import com.example.skypeek.ui.screenshelper.customShadow

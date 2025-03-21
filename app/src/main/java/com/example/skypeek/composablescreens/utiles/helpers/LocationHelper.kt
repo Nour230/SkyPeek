@@ -1,4 +1,4 @@
-package com.example.skypeek.composablescreens.utiles
+package com.example.skypeek.composablescreens.utiles.helpers
 
 import android.Manifest
 import android.annotation.SuppressLint

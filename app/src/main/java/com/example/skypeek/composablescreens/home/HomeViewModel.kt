@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.skypeek.composablescreens.utiles.helpers.convertUnit
+import com.example.skypeek.composablescreens.utiles.helpers.mapTemperatureUnit
 import com.example.skypeek.data.models.ResponseState
 
 import com.example.skypeek.data.repository.WeatherRepository
@@ -25,10 +27,11 @@ class HomeViewModel (private val repo:WeatherRepository):ViewModel(){
     val error  = mutableError.asSharedFlow()
 
 
-    fun getWeather(lat: Double, lon: Double, apiKey: String) {
+    fun getWeather(lat: Double, lon: Double, apiKey: String,units:String) {
+        val tempUnite = convertUnit(units)
         viewModelScope.launch {
             try {
-                val response = repo.fetchWeather(lat, lon, apiKey)
+                val response = repo.fetchWeather(lat, lon, apiKey,tempUnite)
                 response.catch {ex->
                     mutableWeather.value = ResponseState.Error(ex)
                     mutableError.emit(ex.message.toString())
@@ -43,12 +46,14 @@ class HomeViewModel (private val repo:WeatherRepository):ViewModel(){
     }
 
 
-    fun getHourlyWeather(lat: Double, lon: Double, apiKey: String) {
+    fun getHourlyWeather(lat: Double, lon: Double, apiKey: String,units:String) {
+        Log.d("TAG", "getHourlyWeather: $units ")
+        val tempUnite = convertUnit(units)
         viewModelScope.launch {
             try {
                 mutableHourlyWeather.value = ResponseState.Loading // 🔹 Force UI to detect change
 
-                val response = repo.fetchHourlyWeather(lat, lon, apiKey)
+                val response = repo.fetchHourlyWeather(lat, lon, apiKey,tempUnite)
                 response.catch { ex ->
                     Log.e("TAG", "getHourlyWeather: Error fetching weather -> ${ex.message}")
                     mutableHourlyWeather.value = ResponseState.Error(ex)

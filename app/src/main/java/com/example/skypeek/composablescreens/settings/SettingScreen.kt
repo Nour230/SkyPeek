@@ -18,17 +18,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.skypeek.ui.theme.backgroundColor
-import com.example.skypeek.ui.theme.gray
+import com.example.skypeek.composablescreens.utiles.deleteSharedPrefrence
+import com.example.skypeek.composablescreens.utiles.enums.Temperature
+import com.example.skypeek.composablescreens.utiles.enums.WindSpeed
+import com.example.skypeek.composablescreens.utiles.saveToSharedPrefrence
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.secbackgroundColor
-import com.example.skypeek.ui.theme.semonelight
-import com.example.skypeek.ui.theme.white
 
 @Composable
 fun SettingScreen(viewModel: SettingsViewModel) {
-
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -50,7 +51,10 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
                             selected = viewModel.selectedLocation.value == "GPS",
-                            onClick = { viewModel.setLocation("GPS") }
+                            onClick = {
+                                viewModel.setLocation("GPS")
+                                //saveToSharedPrefrence(context = context,"GPS","location")
+                            }
                         )
                         Text(text = "GPS", style = MaterialTheme.typography.labelLarge)
                     }
@@ -58,7 +62,10 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
                             selected = viewModel.selectedLocation.value == "MAP",
-                            onClick = { viewModel.setLocation("MAP") }
+                            onClick = {
+                                viewModel.setLocation("MAP")
+                                //saveToSharedPrefrence(context = context, "MAP", "location")
+                            }
                         )
                         Text(text = "MAP", style = MaterialTheme.typography.labelLarge)
                     }
@@ -80,7 +87,14 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
                             selected = viewModel.selectedTemperature.value == "Celsius",
-                            onClick = { viewModel.setTemperature("Celsius") }
+                            onClick = {
+                                viewModel.setTemperature("Celsius")
+                                deleteSharedPrefrence(context,"temperature")
+                                saveToSharedPrefrence(
+                                    context = context,
+                                    Temperature.CELSIUS.toString(), "temperature"
+                                )
+                            }
                         )
                         Text(text = "Celsius", style = MaterialTheme.typography.labelLarge)
                     }
@@ -88,7 +102,15 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
                             selected = viewModel.selectedTemperature.value == "Fahrenheit",
-                            onClick = { viewModel.setTemperature("Fahrenheit") },
+                            onClick = {
+                                viewModel.setTemperature("Fahrenheit")
+                                deleteSharedPrefrence(context,"temperature")
+                                saveToSharedPrefrence(
+                                    context = context,
+                                    Temperature.FAHRENHEIT.toString(),
+                                    "temperature"
+                                )
+                            },
                             modifier = Modifier.padding(start = 8.dp)
                         )
                         Text(text = "Fahrenheit", style = MaterialTheme.typography.labelLarge)
@@ -97,7 +119,15 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
                             selected = viewModel.selectedTemperature.value == "Kelvin",
-                            onClick = { viewModel.setTemperature("Kelvin") }
+                            onClick = {
+                                viewModel.setTemperature("Kelvin")
+                                deleteSharedPrefrence(context,"temperature")
+                                saveToSharedPrefrence(
+                                    context = context,
+                                    Temperature.KELVIN.toString(),
+                                    "temperature"
+                                )
+                            }
                         )
                         Text(text = "Kelvin", style = MaterialTheme.typography.labelLarge)
                     }
@@ -119,7 +149,10 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
                             selected = viewModel.selectedLanguage.value == "English",
-                            onClick = { viewModel.setLanguage("English") }
+                            onClick = {
+                                viewModel.setLanguage("English")
+                                //saveToSharedPrefrence(context = context, "English", "language")
+                            }
                         )
                         Text(text = "English", style = MaterialTheme.typography.labelLarge)
                     }
@@ -127,7 +160,10 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
                             selected = viewModel.selectedLanguage.value == "Arabic",
-                            onClick = { viewModel.setLanguage("Arabic") }
+                            onClick = {
+                                viewModel.setLanguage("Arabic")
+                                //          saveToSharedPrefrence(context = context, "Arabic", "language")
+                            }
                         )
                         Text(text = "Arabic", style = MaterialTheme.typography.labelLarge)
                     }
@@ -148,15 +184,31 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = viewModel.selectedWindSpeed.value == "miles/hour",
-                        onClick = { viewModel.setWindSpeed("miles/hour") }
+                        onClick = {
+                            viewModel.setWindSpeed("miles/hour")
+                            deleteSharedPrefrence(context,"windspeed")
+                            saveToSharedPrefrence(
+                                context = context,
+                                WindSpeed.MILES_HOUR.toString(),
+                                "windspeed"
+                            )
+                        }
                     )
                     Text(text = "Miles/Hour", style = MaterialTheme.typography.labelLarge)
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
-                        selected = viewModel.selectedWindSpeed.value == "kilometers/hour",
-                        onClick = { viewModel.setWindSpeed("kilometers/hour") }
+                        selected = viewModel.selectedWindSpeed.value == "meter/sec",
+                        onClick = {
+                            viewModel.setWindSpeed("meter/sec")
+                            deleteSharedPrefrence(context,"windspeed")
+                            saveToSharedPrefrence(
+                                context,
+                                WindSpeed.MERE_SEC.toString(),
+                                "windspeed"
+                            )
+                        }
                     )
                     Text(text = "Meter/Sec", style = MaterialTheme.typography.labelLarge)
                 }

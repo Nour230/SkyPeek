@@ -9,12 +9,14 @@ interface RemoteDataSource {
     suspend fun getDailyWeather(
         lat: Double,
         lon: Double,
-        apiKey: String
+        apiKey: String,
+        units: String
     ): Flow<CurrentWeather>
 
     suspend fun getHourlyWeather(
         lat: Double,
         lon: Double,
-        apiKey: String
+        apiKey: String,
+        units: String
     ): Flow<WeatherResponse>
 }

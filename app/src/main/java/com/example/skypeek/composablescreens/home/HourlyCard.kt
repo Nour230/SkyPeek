@@ -1,6 +1,5 @@
 package com.example.skypeek.composablescreens.home
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,6 +24,9 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.example.skypeek.composablescreens.utiles.enums.Temperature
+import com.example.skypeek.composablescreens.utiles.getFromSharedPrefrence
+import com.example.skypeek.composablescreens.utiles.helpers.setUnitSymbol
 import com.example.skypeek.data.models.WeatherData
 import com.example.skypeek.data.models.WeatherResponse
 import com.example.skypeek.ui.theme.black
@@ -83,7 +86,10 @@ fun Weather(weather: WeatherResponse) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(next24HoursWeather.size) {
-                DailyWeatherItem(next24HoursWeather[it])
+                DailyWeatherItem(
+                    next24HoursWeather[it],
+                    units = getFromSharedPrefrence(LocalContext.current, "temperature") ?: Temperature.CELSIUS.toString()
+                )
             }
         }
     }
@@ -91,14 +97,17 @@ fun Weather(weather: WeatherResponse) {
 
 
 @Composable
-fun DailyWeatherItem(weather: WeatherData) {
+fun DailyWeatherItem(weather: WeatherData, units: String) {
+    val tempUnit = setUnitSymbol(units)
     val mainWeather = weather.main
     val date = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(weather.dt * 1000))
-    val isAM = date.contains("AM")
+    val hour = SimpleDateFormat("HH", Locale.getDefault()).format(Date(weather.dt * 1000)).toInt()
+    val isDayTime = hour in 6..18
+
 // Load Lottie animation dynamically
     val composition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(
-            if (isAM)
+            if (isDayTime)
                 getWeatherLottie(weather.weather[0].main)
             else
                 getNightWeatherLottie(weather.weather[0].main)
@@ -133,7 +142,7 @@ fun DailyWeatherItem(weather: WeatherData) {
                 color = black
             )
             Text(
-                text = "${mainWeather.temp.toInt()}°C",
+                text = "${mainWeather.temp.toInt()} $tempUnit",
                 color = black,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
