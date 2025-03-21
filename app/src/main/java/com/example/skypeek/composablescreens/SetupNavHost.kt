@@ -17,6 +17,7 @@ import com.example.skypeek.composablescreens.home.HomeScreen
 import com.example.skypeek.composablescreens.home.WeatherFactory
 import com.example.skypeek.composablescreens.utiles.LocalNavController
 import com.example.skypeek.composablescreens.fav.FavScreen
+import com.example.skypeek.composablescreens.fav.MapScreen
 import com.example.skypeek.composablescreens.settings.SettingScreen
 import com.example.skypeek.composablescreens.settings.SettingsViewModel
 
@@ -34,7 +35,6 @@ fun SetupNavHost(apiService: WeatherApiService,
     )
 
     val settingViewModel: SettingsViewModel = viewModel()
-
     NavHost(
         navController = navController,
         startDestination = ScreensRoute.SplashScreen.route
@@ -50,11 +50,14 @@ fun SetupNavHost(apiService: WeatherApiService,
         composable(ScreensRoute.HomeScreen.route) {
             HomeScreen(homeViewModel, locationState)
         }
-        composable(ScreensRoute.FavScreen.route) {
-            FavScreen()
-        }
         composable(ScreensRoute.SettingScreen.route) {
             SettingScreen(settingViewModel)
+        }
+        composable(ScreensRoute.FavScreen.route) {
+            FavScreen(locationState)
+        }
+        composable(ScreensRoute.MapScreen.route) {
+            MapScreen(locationState)
         }
     }
 }

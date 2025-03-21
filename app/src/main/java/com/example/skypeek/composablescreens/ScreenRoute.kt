@@ -5,5 +5,6 @@ sealed class ScreensRoute(val route: String) {
     object HomeScreen : ScreensRoute("home")
     object SettingScreen : ScreensRoute("setting")
     object FavScreen : ScreensRoute("fav")
+    object MapScreen : ScreensRoute("map")
 }
 
