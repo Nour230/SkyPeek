@@ -57,21 +57,26 @@ import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Location?>) {
+fun HomeScreen(
+    homeViewModel: HomeViewModel,
+    locationState: MutableState<Location?>,
+    isFAB: MutableState<Boolean>
+) {
+    isFAB.value = false
     val context = LocalContext.current
     val currentWeather by homeViewModel.weather.collectAsStateWithLifecycle()
     val currentHourlyWeather by homeViewModel.hourlyWeather.collectAsStateWithLifecycle()
 
     LaunchedEffect(locationState.value) {
         locationState.value?.let { location ->
-                homeViewModel.getWeather(
-                    location.latitude,
-                    location.longitude,
-                    BuildConfig.apiKeySafe,
-                    getFromSharedPrefrence(context,"temperature") ?: "Celsius"
-                )
-            }
+            homeViewModel.getWeather(
+                location.latitude,
+                location.longitude,
+                BuildConfig.apiKeySafe,
+                getFromSharedPrefrence(context, "temperature") ?: "Celsius"
+            )
         }
+    }
 
 
     LaunchedEffect(locationState.value) {
@@ -80,7 +85,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, locationState: MutableState<Locatio
                 location.latitude,
                 location.longitude,
                 BuildConfig.apiKeySafe,
-                getFromSharedPrefrence(context,"temperature") ?: "Celsius"
+                getFromSharedPrefrence(context, "temperature") ?: "Celsius"
             )
         }
     }
@@ -204,7 +209,7 @@ fun WeatherScreen(currentweather: CurrentWeather) {
                 desc = weather.firstOrNull()?.description ?: "N/A",
                 cloud = currentweather.clouds.all.toString(),
                 composition = composition,
-                units = getFromSharedPrefrence(LocalContext.current,"temperature") ?: "Celsius"
+                units = getFromSharedPrefrence(LocalContext.current, "temperature") ?: "Celsius"
             )
 
             Spacer(modifier = Modifier.height(22.dp))
@@ -216,7 +221,7 @@ fun WeatherScreen(currentweather: CurrentWeather) {
                 windSpeed = currentweather.wind.speed.toString(),
                 pressure = mainWeather.pressure.toString(),
                 date = formattedDate,
-                units = getFromSharedPrefrence(LocalContext.current,"windspeed")?:"m/s"
+                units = getFromSharedPrefrence(LocalContext.current, "windspeed") ?: "m/s"
             )
         }
     }
@@ -226,7 +231,7 @@ fun WeatherScreen(currentweather: CurrentWeather) {
 @Composable
 fun WeatherMainInfo(
     temperature: Int, composition:
-    LottieComposition?, desc: String, cloud: String ,units:String
+    LottieComposition?, desc: String, cloud: String, units: String
 ) {
     val tempUnit = setUnitSymbol(units)
 
@@ -308,7 +313,11 @@ fun WeatherDetails(
                     .background(Color.White.copy(alpha = 0.5f))
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                WeatherDetailItem(icon = R.drawable.wind, label = "Wind", value = "$windSpeed $windUnit")
+                WeatherDetailItem(
+                    icon = R.drawable.wind,
+                    label = "Wind",
+                    value = "$windSpeed $windUnit"
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(
                     modifier = Modifier.width(180.dp),

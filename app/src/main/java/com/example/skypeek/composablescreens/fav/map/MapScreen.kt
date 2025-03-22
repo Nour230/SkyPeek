@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -24,9 +26,11 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.skypeek.ui.theme.backgroundColor
+import com.example.skypeek.R
 import com.example.skypeek.ui.theme.loyalBlue
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
@@ -40,7 +44,12 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
-fun MapScreen(viewModel: MapViewModel, locationState: MutableState<Location?>) {
+fun MapScreen(
+    viewModel: MapViewModel,
+    locationState: MutableState<Location?>,
+    isFAB: MutableState<Boolean>
+) {
+    isFAB.value = false
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val predictions by viewModel.predictions.collectAsStateWithLifecycle()
     val location by viewModel.location.collectAsStateWithLifecycle()
@@ -61,7 +70,7 @@ fun MapScreen(viewModel: MapViewModel, locationState: MutableState<Location?>) {
                     .fillMaxWidth()
                     .padding(16.dp),
                 colors = TextFieldDefaults.colors(loyalBlue),
-             //   textStyle = backgroundColor
+                //   textStyle = backgroundColor
             )
             predictions.forEach { prediction ->
                 Text(
@@ -141,12 +150,49 @@ fun MapView(location: Location?, locationState: MutableState<Location?>, viewMod
         }
         Card(
             modifier = Modifier
-                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
                 .padding(16.dp)
-                .align(Alignment.BottomCenter),
-            elevation = CardDefaults.cardElevation(8.dp)
+                .fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(8.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(colorResource(R.color.white))
         ) {
             Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Selected Location",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colorResource(R.color.black),
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = "Latitude: ${markerState.position.latitude}")
+                Text(text = "Longitude: ${markerState.position.longitude}")
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = {
+                        viewModel.insertLocation(
+                            markerState.position.latitude,
+                            markerState.position.longitude
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(colorResource(R.color.darkBlue)),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Add to Favourites",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = colorResource(R.color.white),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            /*Column(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -165,7 +211,7 @@ fun MapView(location: Location?, locationState: MutableState<Location?>, viewMod
                 ) }) {
                     Text("Add to Favorites")
                 }
-            }
+            }*/
         }
     }
 }

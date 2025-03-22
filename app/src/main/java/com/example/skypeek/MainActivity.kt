@@ -30,6 +30,8 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -37,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +51,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -60,29 +64,29 @@ import com.example.skypeek.data.remote.RetrofitHelper.weatherApiService
 import com.example.skypeek.data.remote.WeatherApiService
 import com.example.skypeek.ui.screenshelper.customShadow
 import com.example.skypeek.ui.theme.Purple40
-import androidx.compose.runtime.*
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.exyte.animatednavbar.AnimatedNavigationBar
-import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
-import com.exyte.animatednavbar.animation.indendshape.Height
-import kotlinx.coroutines.delay
 import com.example.skypeek.ui.theme.black
 import com.example.skypeek.ui.theme.lightBlue
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.secbackgroundColor
+import com.exyte.animatednavbar.AnimatedNavigationBar
+import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
+import com.exyte.animatednavbar.animation.indendshape.Height
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.libraries.places.api.Places
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private lateinit var locationHelper: LocationHelper
     lateinit var locationState: MutableState<Location?>
+    private lateinit var isFAB: MutableState<Boolean>
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Initialize Places API
         if (!Places.isInitialized()) {
-            Places.initialize(applicationContext,"AIzaSyCaj10hgcwGaosoYRyv79ppLviFJ9eMNmM")
+            Places.initialize(applicationContext, "AIzaSyCaj10hgcwGaosoYRyv79ppLviFJ9eMNmM")
         }
         enableEdgeToEdge()
 
@@ -100,7 +104,8 @@ class MainActivity : ComponentActivity() {
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
         setContent {
-            WeatherApp(weatherApiService, locationState)
+            isFAB = remember { mutableStateOf(false) }
+            WeatherApp(weatherApiService, locationState, isFAB)
             FullScreenEffect()
         }
 
@@ -149,12 +154,16 @@ class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
-    fun WeatherApp(apiService: WeatherApiService, locationState: MutableState<Location?>) {
-
+    fun WeatherApp(
+        apiService: WeatherApiService,
+        locationState: MutableState<Location?>,
+        isFAB: MutableState<Boolean>
+    ) {
         val navController = rememberNavController()
         CompositionLocalProvider(LocalNavController provides navController) {
             val currentBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = currentBackStackEntry?.destination?.route ?: ScreensRoute.SplashScreen.route
+            val currentRoute =
+                currentBackStackEntry?.destination?.route ?: ScreensRoute.SplashScreen.route
             var selectedIndex by remember { mutableStateOf(0) }
             val navigationBarItems = NavigationBarItems.entries.toTypedArray()
 
@@ -166,26 +175,32 @@ class MainActivity : ComponentActivity() {
                 showBottomBar = currentRoute != ScreensRoute.SplashScreen.route
             }
 
-            Surface (
-                modifier = Modifier
-                    .fillMaxSize()
-                    .customShadow(
-                        color = Purple40,
-                        alpha = 0.5f,
-                        shadowRadius = 16.dp,
-                        borderRadius = 42.dp,
-                        offsetY = (40).dp
-                    )
-            ){
-                Scaffold(
+            Scaffold(
+                floatingActionButton = {
+                    if(isFAB.value){
+                        FloatingActionButton(onClick = {
+                            navController.navigate(ScreensRoute.MapScreen.route)
+                        }) {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_add_24),
+                                contentDescription = "Add"
+                            )
+                        }
+                    }
+                },
+                floatingActionButtonPosition = FabPosition.End,
                 bottomBar = {
                     // Only show bottom bar if NOT on SplashScreen
                     if (showBottomBar) {
                         AnimatedNavigationBar(
                             modifier = Modifier.height(64.dp),
                             selectedIndex = selectedIndex,
-                            cornerRadius = shapeCornerRadius(topLeft = 24.dp, topRight = 24.dp
-                            , bottomLeft = 0.dp, bottomRight = 0.dp),
+                            cornerRadius = shapeCornerRadius(
+                                topLeft = 24.dp,
+                                topRight = 24.dp,
+                                bottomLeft = 0.dp,
+                                bottomRight = 0.dp
+                            ),
                             ballAnimation = Parabolic(tween(300)),
                             indentAnimation = Height(tween(600)),
                             barColor = secbackgroundColor,
@@ -224,9 +239,7 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.size(26.dp),
                                         imageVector = item.icon,
                                         contentDescription = "Bottom Nav Icon",
-                                        tint = if (selectedIndex == index)
-                                            loyalBlue
-                                        else lightBlue
+                                        tint = if (selectedIndex == index) loyalBlue else lightBlue
                                     )
 
                                     LaunchedEffect(isShaking) {
@@ -241,15 +254,27 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             ) { paddingValues ->
-                Box(
+                Surface(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
+                        .customShadow(
+                            color = Purple40,
+                            alpha = 0.5f,
+                            shadowRadius = 16.dp,
+                            borderRadius = 42.dp,
+                            offsetY = (40).dp
+                        )
                 ) {
-                    SetupNavHost(apiService, locationState)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        SetupNavHost(apiService, locationState,isFAB)
+                    }
                 }
-            } }
+            }
         }
     }
 
