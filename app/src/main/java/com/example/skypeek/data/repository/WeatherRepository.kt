@@ -10,7 +10,7 @@ interface WeatherRepository {
     suspend fun fetchWeather(lat: Double, lon: Double, apiKey: String, units: String): Flow<CurrentWeather>
     suspend fun fetchHourlyWeather(lat: Double, lon: Double, apiKey: String, units: String): Flow<WeatherResponse>
     suspend fun insertLocation(locationPOJO: LocationPOJO)
-    suspend fun deleteLocation(id: Int)
+    suspend fun deleteLocation(locationPOJO: LocationPOJO)
     fun getAllLocations(): Flow<List<LocationPOJO>>
 
 }

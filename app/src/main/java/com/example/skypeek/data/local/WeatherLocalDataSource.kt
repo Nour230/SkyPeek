@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface WeatherLocalDataSource {
     suspend fun insertLocation(location: LocationPOJO)
-    suspend fun deleteLocation(id: Int)
+    suspend fun deleteLocation(location: LocationPOJO)
     fun  getAllLocations(): Flow<List<LocationPOJO>>
 
 }

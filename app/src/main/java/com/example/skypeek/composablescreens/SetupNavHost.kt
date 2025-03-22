@@ -23,6 +23,8 @@ import com.example.skypeek.composablescreens.fav.map.MapScreen
 import com.example.skypeek.composablescreens.fav.map.MapViewModel
 import com.example.skypeek.composablescreens.settings.SettingScreen
 import com.example.skypeek.composablescreens.settings.SettingsViewModel
+import com.example.skypeek.data.local.WeatherDataBase
+import com.example.skypeek.data.local.WeatherLocalDataSourceImpl
 import com.google.android.libraries.places.api.Places
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -32,7 +34,8 @@ fun SetupNavHost(apiService: WeatherApiService,
 ) {
     val navController = LocalNavController.current
     val remoteDataSource = WeatherRemoteDataSource(apiService)
-    val weatherRepository = WeatherRepositoryImpl(remoteDataSource)
+    val localDataSource = WeatherLocalDataSourceImpl(WeatherDataBase.getInstance(LocalContext.current).dao())
+    val weatherRepository = WeatherRepositoryImpl(remoteDataSource,localDataSource)
 
     val homeViewModel: HomeViewModel = viewModel(
         factory = WeatherFactory(weatherRepository)
@@ -40,7 +43,8 @@ fun SetupNavHost(apiService: WeatherApiService,
     
     val mapViewModel: MapViewModel = viewModel(
         factory = MapFactory(
-            placesClient = Places.createClient(LocalContext.current)
+            placesClient = Places.createClient(LocalContext.current),
+            weatherRepository
         )
     )
     val settingViewModel: SettingsViewModel = viewModel()

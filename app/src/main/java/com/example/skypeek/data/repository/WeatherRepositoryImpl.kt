@@ -27,8 +27,8 @@ class WeatherRepositoryImpl(private val remoteDataSource: RemoteDataSource, priv
         localDataSource.insertLocation(locationPOJO)
     }
 
-    override suspend fun deleteLocation(id: Int) {
-        localDataSource.deleteLocation(id)
+    override suspend fun deleteLocation(locationPOJO: LocationPOJO) {
+        localDataSource.deleteLocation(locationPOJO)
     }
 
     override fun getAllLocations(): Flow<List<LocationPOJO>> {

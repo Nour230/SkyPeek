@@ -1,6 +1,7 @@
 package com.example.skypeek.data.local
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -15,7 +16,7 @@ interface WeatherDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLocation(location: LocationPOJO)
 
-    @Query("DELETE FROM location WHERE id = :id")
-    suspend fun deleteLocation(id: Int)
+    @Delete
+    suspend fun deleteLocation(location: LocationPOJO)
 
 }

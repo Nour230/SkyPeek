@@ -5,10 +5,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp") version "2.0.21-1.0.27"
+   // id("com.google.devtools.ksp") version "2.1.0-1.0.29"
+    id("com.google.devtools.ksp")
     kotlin("plugin.serialization") version "2.1.10"
 
 }
+
 
 android {
     namespace = "com.example.skypeek"
@@ -109,9 +111,17 @@ dependencies {
     implementation (libs.material)
 
     //Room
-    implementation(libs.androidx.room.runtime)
-    // Kotlin Symbol Processing (KSP)
-    ksp(libs.symbol.processing.api)
-    // optional - Kotlin Extensions and Coroutines support for Room
-    implementation(libs.androidx.room.ktx)
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+// Kotlin Symbol Processing (KSP)
+    ksp("androidx.room:room-compiler:$room_version")
+// optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:$room_version")
+
+//    //Room
+//    implementation(libs.androidx.room.runtime)
+//    // Kotlin Symbol Processing (KSP)
+//   // ksp(libs.symbol.processing.api)
+//    // optional - Kotlin Extensions and Coroutines support for Room
+//    implementation(libs.androidx.room.ktx)
 }

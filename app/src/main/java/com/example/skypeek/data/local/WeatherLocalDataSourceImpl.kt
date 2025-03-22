@@ -8,8 +8,8 @@ class WeatherLocalDataSourceImpl(private val weatherDao: WeatherDao) :WeatherLoc
        weatherDao.insertLocation(location)
     }
 
-    override suspend fun deleteLocation(id: Int) {
-        weatherDao.deleteLocation(id)
+    override suspend fun deleteLocation(location: LocationPOJO) {
+        weatherDao.deleteLocation(location)
     }
 
     override fun getAllLocations(): Flow<List<LocationPOJO>> {

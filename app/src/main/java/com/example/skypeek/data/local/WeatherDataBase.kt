@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.skypeek.data.models.LocationPOJO
 
-@Database(entities = [LocationPOJO::class], version = 1)
+@Database(entities = [LocationPOJO::class], version = 2)
 abstract class WeatherDataBase : RoomDatabase(){
     abstract fun dao(): WeatherDao
     companion object{

@@ -6,3 +6,4 @@ sealed class ResponseState {
     data class Error(val message: Throwable): ResponseState()
     data class SuccessForecast(val data: WeatherResponse): ResponseState()
 }
+

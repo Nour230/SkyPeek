@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.skypeek.data.models.LocationPOJO
+import com.example.skypeek.data.repository.WeatherRepository
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
@@ -14,7 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class MapViewModel(private val placesClient: PlacesClient) : ViewModel() {
+class MapViewModel(private val placesClient: PlacesClient,val repo: WeatherRepository) : ViewModel() {
 
     // State for search query
     private val _searchQuery = MutableStateFlow("")
@@ -34,7 +36,7 @@ class MapViewModel(private val placesClient: PlacesClient) : ViewModel() {
         fetchPredictions(query)
     }
 
-    // Fetch place details when a prediction is selected
+     //Fetch place details when a prediction is selected
     fun onPlaceSelected(placeId: String) {
         fetchPlaceDetails(placeId)
     }
@@ -42,12 +44,10 @@ class MapViewModel(private val placesClient: PlacesClient) : ViewModel() {
     // Fetch autocomplete predictions
     private fun fetchPredictions(query: String) {
         if (query.isEmpty()) return
-
         viewModelScope.launch {
             val request = FindAutocompletePredictionsRequest.builder()
                 .setQuery(query)
                 .build()
-
             placesClient.findAutocompletePredictions(request)
                 .addOnSuccessListener { response ->
                     _predictions.value = response.autocompletePredictions
@@ -59,7 +59,7 @@ class MapViewModel(private val placesClient: PlacesClient) : ViewModel() {
     }
 
     // Fetch place details
-    private fun fetchPlaceDetails(placeId: String) {
+     fun fetchPlaceDetails(placeId: String) {
         val placeFields = listOf(Place.Field.LAT_LNG)
         val request = FetchPlaceRequest.builder(placeId, placeFields).build()
         placesClient.fetchPlace(request)
@@ -69,17 +69,26 @@ class MapViewModel(private val placesClient: PlacesClient) : ViewModel() {
                         latitude = latLng.latitude
                         longitude = latLng.longitude
                     }
+
                 }
             }
             .addOnFailureListener { exception ->
                 Log.e("MapViewModel", "Error fetching place details: ${exception.message}")
             }
     }
+
+    fun insertLocation(lat: Double, lon: Double) {
+        Log.d("TAG", "Inserting location: Lat=$lat, Lon=$lon")
+        val location = LocationPOJO(lat = lat, long = lon)
+        viewModelScope.launch {
+            repo.insertLocation(location)
+        }
+    }
 }
 
 
-class MapFactory(private val placesClient: PlacesClient) : ViewModelProvider.Factory {
-    override fun<T : ViewModel> create(modelClass: Class<T>): T {
-        return MapViewModel(placesClient) as T
+class MapFactory(private val placesClient: PlacesClient,val repo: WeatherRepository) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return MapViewModel(placesClient,repo) as T
     }
 }

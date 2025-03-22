@@ -15,7 +15,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuDefaults.outlinedTextFieldColors
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -25,7 +24,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.skypeek.ui.theme.backgroundColor
@@ -41,7 +39,6 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(viewModel: MapViewModel, locationState: MutableState<Location?>) {
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -49,7 +46,7 @@ fun MapScreen(viewModel: MapViewModel, locationState: MutableState<Location?>) {
     val location by viewModel.location.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        GoogleMapScreen(location, locationState)
+        GoogleMapScreen(location, locationState, viewModel)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -63,7 +60,8 @@ fun MapScreen(viewModel: MapViewModel, locationState: MutableState<Location?>) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                colors = TextFieldDefaults.colors(loyalBlue)
+                colors = TextFieldDefaults.colors(loyalBlue),
+             //   textStyle = backgroundColor
             )
             predictions.forEach { prediction ->
                 Text(
@@ -84,18 +82,22 @@ fun MapScreen(viewModel: MapViewModel, locationState: MutableState<Location?>) {
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun GoogleMapScreen(location: Location?, locationState: MutableState<Location?>) {
+fun GoogleMapScreen(
+    location: Location?,
+    locationState: MutableState<Location?>,
+    viewModel: MapViewModel
+) {
     val permissionState =
         rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
     LaunchedEffect(Unit) {
         permissionState.launchPermissionRequest()
     }
-    MapView(location, locationState)
+    MapView(location, locationState, viewModel)
 }
 
 @SuppressLint("MissingPermission")
 @Composable
-fun MapView(location: Location?, locationState: MutableState<Location?>) {
+fun MapView(location: Location?, locationState: MutableState<Location?>, viewModel: MapViewModel) {
 
     val cameraPositionState = rememberCameraPositionState()
 
@@ -137,7 +139,6 @@ fun MapView(location: Location?, locationState: MutableState<Location?>) {
                 snippet = "Lat: ${markerState.position.latitude}, Lng: ${markerState.position.longitude}"
             )
         }
-
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -156,7 +157,12 @@ fun MapView(location: Location?, locationState: MutableState<Location?>) {
                     text = "Longitude: ${markerState.position.longitude}",
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = { /* Add to Favorites Logic */ }) {
+                Button(onClick = {
+
+                    viewModel.insertLocation(
+                        markerState.position.latitude,
+                        markerState.position.longitude
+                ) }) {
                     Text("Add to Favorites")
                 }
             }
