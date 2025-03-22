@@ -3,8 +3,8 @@ package com.example.skypeek.composablescreens.fav.map
 import android.Manifest
 import android.annotation.SuppressLint
 import android.location.Location
-import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,16 +14,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuDefaults.outlinedTextFieldColors
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.skypeek.ui.theme.backgroundColor
+import com.example.skypeek.ui.theme.loyalBlue
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -35,39 +41,44 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(viewModel: MapViewModel, locationState: MutableState<Location?>) {
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val predictions by viewModel.predictions.collectAsStateWithLifecycle()
     val location by viewModel.location.collectAsStateWithLifecycle()
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { viewModel.onSearchQueryChanged(it) },
-            label = { Text("Search Places") },
+    Box(modifier = Modifier.fillMaxSize()) {
+        GoogleMapScreen(location, locationState)
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-        )
-
-        predictions.forEach { prediction ->
-            Text(
-                text = prediction.getPrimaryText(null).toString(),
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChanged(it) },
+                label = { Text("Search Places") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
-                    .clickable {
-                        viewModel.onPlaceSelected(prediction.placeId)
-                    }
+                    .padding(16.dp),
+                colors = TextFieldDefaults.colors(loyalBlue)
             )
+            predictions.forEach { prediction ->
+                Text(
+                    text = prediction.getPrimaryText(null).toString(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable {
+                            viewModel.onPlaceSelected(prediction.placeId)
+                        }
+                )
+            }
         }
-
-        GoogleMapScreen(location, locationState)
     }
+
 }
 
 
@@ -91,8 +102,10 @@ fun MapView(location: Location?, locationState: MutableState<Location?>) {
     // Initial marker position (default or first location)
     val markerState = rememberMarkerState(
         position = LatLng(
-            location?.latitude ?: locationState.value?.latitude ?: 0.0, // Use locationState if location is null
-            location?.longitude ?: locationState.value?.longitude ?: 0.0 // Use locationState if location is null
+            location?.latitude ?: locationState.value?.latitude
+            ?: 0.0, // Use locationState if location is null
+            location?.longitude ?: locationState.value?.longitude
+            ?: 0.0 // Use locationState if location is null
         )
     )
 
@@ -108,9 +121,9 @@ fun MapView(location: Location?, locationState: MutableState<Location?>) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.matchParentSize(),
             cameraPositionState = cameraPositionState,
             properties = MapProperties(isMyLocationEnabled = true),
             uiSettings = MapUiSettings(zoomControlsEnabled = true),
@@ -128,7 +141,8 @@ fun MapView(location: Location?, locationState: MutableState<Location?>) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp)
+                .align(Alignment.BottomCenter),
             elevation = CardDefaults.cardElevation(8.dp)
         ) {
             Column(
