@@ -17,11 +17,17 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -32,8 +38,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieConstants
 import com.example.skypeek.R
+import com.example.skypeek.composablescreens.utiles.helpers.getAddressFromLocation
 import com.example.skypeek.data.models.LocationPOJO
 import com.example.skypeek.data.models.ResponseStateFav
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 @Composable
@@ -59,28 +67,6 @@ fun FavScreen(viewModel: FavViewModel, isFAB: MutableState<Boolean>) {
 
 @Composable
 fun StartFavScreen(fav: List<LocationPOJO>,viewModel: FavViewModel) {
-//    val navController = LocalNavController.current
-//    Scaffold(
-//
-//        floatingActionButton = {
-//            FloatingActionButton(onClick = {
-//                navController.navigate(ScreensRoute.MapScreen.route)
-//            }) {
-//                Icon(
-//                    painter = painterResource(R.drawable.baseline_add_24),
-//                    contentDescription = "Add"
-//                )
-//            }
-//        },
-//        floatingActionButtonPosition = FabPosition.End
-//    ) { paddingValues ->
-//
-//    }
-    FavScreenContent(fav,viewModel)
-}
-
-@Composable
-fun FavScreenContent(fav: List<LocationPOJO>,viewModel: FavViewModel) {
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -120,38 +106,64 @@ fun FavScreenContent(fav: List<LocationPOJO>,viewModel: FavViewModel) {
 }
 
 @Composable
-fun FavItem(data: LocationPOJO,viewModel: FavViewModel) {
+fun FavItem(data: LocationPOJO, viewModel: FavViewModel) {
     val city = getAddressFromLocation(data)
-    Card(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(8.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(colorResource(R.color.cardBackground))
-    ){
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Use a Box to properly layer the Snackbar
+    Box(modifier = Modifier.fillMaxSize()) {
+        Card(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(8.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(colorResource(R.color.cardBackground))
         ) {
-            Text(
-                text = "City is : $city",
-                fontSize = 22.sp,
-                modifier = Modifier.weight(1f)
-            )
-            Button(
-                onClick = { viewModel.deleteFromRoom(data)},
-                colors = ButtonDefaults.buttonColors(colorResource(R.color.darkBlue)),
-                shape = RoundedCornerShape(8.dp)
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Delete"
+                    text = "City is : $city",
+                    fontSize = 22.sp,
+                    modifier = Modifier.weight(1f)
                 )
+                Button(
+                    onClick = {
+                       // viewModel.deleteFromRoom(data)
+                        coroutineScope.launch {
+                            val result = snackbarHostState.showSnackbar(
+                                message = "Item deleted",
+                                actionLabel = "Undo",
+                                duration = SnackbarDuration.Short
+                            )
+                            // Handle the Snackbar result
+                            if (result == SnackbarResult.ActionPerformed) {
+                                // Undo the delete action
+                                viewModel.addToRoom(data)
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(colorResource(R.color.darkBlue)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(text = "Delete")
+                }
             }
         }
+
+        // Snackbar Host - Aligned to the bottom of the screen
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
+
+
 
 @Composable
 private fun LoadingIndicatore() {
@@ -164,19 +176,19 @@ private fun LoadingIndicatore() {
     }
 }
 
-@Composable
-private fun getAddressFromLocation(location: LocationPOJO): String {
-    val geocoder = Geocoder(LocalContext.current, Locale.getDefault())
-    return try {
-        val addresses = geocoder.getFromLocation(location.lat, location.long, 1)
-        if (addresses != null && addresses.isNotEmpty()) {
-            val address = addresses[0]
-            address.getCountryName()
-        } else {
-            "Address not found"
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        "Error fetching address"
-    }
-}
+//@Composable
+//private fun getAddressFromLocation(location: LocationPOJO): String {
+//    val geocoder = Geocoder(LocalContext.current, Locale.getDefault())
+//    return try {
+//        val addresses = geocoder.getFromLocation(location.lat, location.long, 1)
+//        if (addresses != null && addresses.isNotEmpty()) {
+//            val address = addresses[0]
+//            address.getCountryName()
+//        } else {
+//            "Address not found"
+//        }
+//    } catch (e: Exception) {
+//        e.printStackTrace()
+//        "Error fetching address"
+//    }
+//}
