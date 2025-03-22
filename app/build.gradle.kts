@@ -5,7 +5,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27"
     kotlin("plugin.serialization") version "2.1.10"
+
 }
 
 android {
@@ -105,4 +107,11 @@ dependencies {
     implementation (libs.places.v340) // Latest Google Places API
 
     implementation (libs.material)
+
+    //Room
+    implementation(libs.androidx.room.runtime)
+    // Kotlin Symbol Processing (KSP)
+    ksp(libs.symbol.processing.api)
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation(libs.androidx.room.ktx)
 }
