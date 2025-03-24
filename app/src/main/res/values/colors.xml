@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="cardBackground">#F2E1CE</color>
+    <color name="cardBackgroundgray">#434343</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="darkBlue">#26026B</color>
     <color name="teal_200">#FF03DAC5</color>

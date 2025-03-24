@@ -12,24 +12,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -37,7 +27,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -47,17 +36,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.skypeek.composablescreens.ScreensRoute
 import com.example.skypeek.composablescreens.SetupNavHost
 import com.example.skypeek.composablescreens.utiles.LocalNavController
+import com.example.skypeek.composablescreens.utiles.enums.NavigationBarItems
 import com.example.skypeek.composablescreens.utiles.helpers.LocationHelper
 import com.example.skypeek.composablescreens.utiles.helpers.REQUEST_LOCATION_PERMISSION
 import com.example.skypeek.data.remote.RetrofitHelper.weatherApiService
@@ -65,7 +53,7 @@ import com.example.skypeek.data.remote.WeatherApiService
 import com.example.skypeek.ui.screenshelper.customShadow
 import com.example.skypeek.ui.theme.Purple40
 import com.example.skypeek.ui.theme.black
-import com.example.skypeek.ui.theme.lightBlue
+import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.secbackgroundColor
 import com.exyte.animatednavbar.AnimatedNavigationBar
@@ -74,12 +62,12 @@ import com.exyte.animatednavbar.animation.indendshape.Height
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.libraries.places.api.Places
-import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private lateinit var locationHelper: LocationHelper
     lateinit var locationState: MutableState<Location?>
     private lateinit var isFAB: MutableState<Boolean>
+    private lateinit var isNAV: MutableState<Boolean>
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,7 +93,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             isFAB = remember { mutableStateOf(false) }
-            WeatherApp(weatherApiService, locationState, isFAB)
+            isNAV = remember { mutableStateOf(false) }
+            WeatherApp(weatherApiService, locationState, isFAB, isNAV)
             FullScreenEffect()
         }
 
@@ -157,33 +146,25 @@ class MainActivity : ComponentActivity() {
     fun WeatherApp(
         apiService: WeatherApiService,
         locationState: MutableState<Location?>,
-        isFAB: MutableState<Boolean>
+        isFAB: MutableState<Boolean>,
+        isNAV: MutableState<Boolean>
     ) {
         val navController = rememberNavController()
         CompositionLocalProvider(LocalNavController provides navController) {
-            val currentBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute =
-                currentBackStackEntry?.destination?.route ?: ScreensRoute.SplashScreen.route
             var selectedIndex by remember { mutableStateOf(0) }
             val navigationBarItems = NavigationBarItems.entries.toTypedArray()
-
             val hapticFeedback = LocalHapticFeedback.current
-            var showBottomBar by remember { mutableStateOf(false) }
-
-            // Update showBottomBar based on the current route
-            LaunchedEffect(currentRoute) {
-                showBottomBar = currentRoute != ScreensRoute.SplashScreen.route
-            }
-
             Scaffold(
                 floatingActionButton = {
-                    if(isFAB.value){
-                        FloatingActionButton(onClick = {
-                            navController.navigate(ScreensRoute.MapScreen.route)
-                        }) {
+                    if (isFAB.value) {
+                        FloatingActionButton(
+                            onClick = {
+                                navController.navigate(ScreensRoute.MapScreen.route)
+                            }
+                        ) {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_add_24),
-                                contentDescription = "Add"
+                                contentDescription = "Add",
                             )
                         }
                     }
@@ -191,7 +172,7 @@ class MainActivity : ComponentActivity() {
                 floatingActionButtonPosition = FabPosition.End,
                 bottomBar = {
                     // Only show bottom bar if NOT on SplashScreen
-                    if (showBottomBar) {
+                    if (isNAV.value) {
                         AnimatedNavigationBar(
                             modifier = Modifier.height(64.dp),
                             selectedIndex = selectedIndex,
@@ -207,21 +188,9 @@ class MainActivity : ComponentActivity() {
                             ballColor = loyalBlue
                         ) {
                             navigationBarItems.forEachIndexed { index, item ->
-                                var isShaking by remember { mutableStateOf(false) }
-
-                                val shakeOffset by animateFloatAsState(
-                                    targetValue = if (isShaking) 8f else 0f,
-                                    animationSpec = infiniteRepeatable(
-                                        animation = tween(50, easing = FastOutLinearInEasing),
-                                        repeatMode = RepeatMode.Reverse
-                                    ),
-                                    label = "Shake Animation"
-                                )
-
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .offset(x = shakeOffset.dp)
                                         .noRippleClickableWithVibration(hapticFeedback) {
                                             if (selectedIndex != index) {
                                                 selectedIndex = index
@@ -230,7 +199,6 @@ class MainActivity : ComponentActivity() {
                                                         inclusive = false
                                                     }
                                                 }
-                                                isShaking = true
                                             }
                                         },
                                     contentAlignment = Alignment.Center
@@ -239,15 +207,8 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.size(26.dp),
                                         imageVector = item.icon,
                                         contentDescription = "Bottom Nav Icon",
-                                        tint = if (selectedIndex == index) loyalBlue else lightBlue
+                                        tint = if (selectedIndex == index) loyalBlue else cardBackGround
                                     )
-
-                                    LaunchedEffect(isShaking) {
-                                        if (isShaking) {
-                                            delay(300)
-                                            isShaking = false
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -271,18 +232,11 @@ class MainActivity : ComponentActivity() {
                             .padding(paddingValues),
                         contentAlignment = Alignment.Center
                     ) {
-                        SetupNavHost(apiService, locationState,isFAB)
+                        SetupNavHost(apiService, locationState, isFAB, isNAV)
                     }
                 }
             }
         }
-    }
-
-    enum class NavigationBarItems(val icon: ImageVector, val route: String) {
-        Home(Icons.Filled.Home, ScreensRoute.HomeScreen.route),
-        Search(Icons.Filled.Favorite, "fav"),
-        Alarm(Icons.Filled.Call, "alarm"),
-        Settings(Icons.Filled.Settings, "setting")
     }
 
     fun Modifier.noRippleClickableWithVibration(

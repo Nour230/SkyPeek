@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -19,12 +22,16 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.skypeek.R
-import com.example.skypeek.ui.theme.*
+import com.example.skypeek.ui.theme.backgroundColor
+import com.example.skypeek.ui.theme.loyalBlue
 import kotlinx.coroutines.delay
 
 
 @Composable
-fun SplashScreen(navToMainScreen: () -> Unit) {
+fun SplashScreen(
+    isNAV: MutableState<Boolean>, navToMainScreen: () -> Unit
+) {
+    isNAV.value = false
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_animation))
     val progress by animateLottieCompositionAsState(composition)
 
@@ -34,7 +41,8 @@ fun SplashScreen(navToMainScreen: () -> Unit) {
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .background(color = backgroundColor),
         contentAlignment = Alignment.Center
     ) {
@@ -44,7 +52,7 @@ fun SplashScreen(navToMainScreen: () -> Unit) {
             progress = { progress },
             modifier = Modifier
                 .size(600.dp)
-                . align(Alignment.TopCenter)
+                .align(Alignment.TopCenter)
                 .padding(top = 170.dp)
         )
         Text(

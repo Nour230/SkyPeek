@@ -69,7 +69,7 @@ class MapViewModel(private val placesClient: PlacesClient,val repo: WeatherRepos
                         latitude = latLng.latitude
                         longitude = latLng.longitude
                     }
-
+                    _predictions.value = emptyList()
                 }
             }
             .addOnFailureListener { exception ->

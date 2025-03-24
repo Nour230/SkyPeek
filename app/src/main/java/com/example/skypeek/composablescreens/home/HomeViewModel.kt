@@ -5,9 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.skypeek.composablescreens.utiles.helpers.convertUnit
-import com.example.skypeek.composablescreens.utiles.helpers.mapTemperatureUnit
 import com.example.skypeek.data.models.ResponseState
-
 import com.example.skypeek.data.repository.WeatherRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

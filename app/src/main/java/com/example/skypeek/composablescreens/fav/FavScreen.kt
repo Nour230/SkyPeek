@@ -1,6 +1,7 @@
 package com.example.skypeek.composablescreens.fav
 
-import android.location.Geocoder
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -30,7 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,12 +42,14 @@ import com.example.skypeek.R
 import com.example.skypeek.composablescreens.utiles.helpers.getAddressFromLocation
 import com.example.skypeek.data.models.LocationPOJO
 import com.example.skypeek.data.models.ResponseStateFav
+import com.example.skypeek.ui.theme.cardBackGround
+import com.example.skypeek.ui.theme.gray
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 @Composable
-fun FavScreen(viewModel: FavViewModel, isFAB: MutableState<Boolean>) {
+fun FavScreen(viewModel: FavViewModel, isFAB: MutableState<Boolean>,isNAV: MutableState<Boolean>, goToFavDetailsScreen: (LocationPOJO) -> Unit = {}) {
     isFAB.value = true
+    isNAV.value = true
     val uiState by viewModel.favList.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -60,18 +63,33 @@ fun FavScreen(viewModel: FavViewModel, isFAB: MutableState<Boolean>) {
         is ResponseStateFav.Loading -> LoadingIndicatore()
         is ResponseStateFav.Success -> StartFavScreen(
             fav = (uiState as ResponseStateFav.Success).data,
-            viewModel = viewModel
+            viewModel = viewModel,
+            goToFavDetailsScreen = goToFavDetailsScreen
         )
     }
 }
 
 @Composable
-fun StartFavScreen(fav: List<LocationPOJO>,viewModel: FavViewModel) {
-    Box(
-        modifier = Modifier.fillMaxWidth()
+fun StartFavScreen(fav: List<LocationPOJO>, viewModel: FavViewModel,goToFavDetailsScreen: (LocationPOJO) -> Unit = {}) {
+    val snackbarHostState = remember { SnackbarHostState() }
+
+        Box(
+        modifier = Modifier.fillMaxSize().background(
+            brush = Brush.verticalGradient(
+                colors = listOf(
+                    cardBackGround,gray,cardBackGround
+                )
+            )
+        ),
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().background(
+            brush = Brush.verticalGradient(
+                colors = listOf(
+                    cardBackGround,gray,cardBackGround
+                )
+            )
+        ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (fav.isEmpty()) {
@@ -97,29 +115,33 @@ fun StartFavScreen(fav: List<LocationPOJO>,viewModel: FavViewModel) {
                 items(fav.size) {
                     FavItem(
                         data = fav[it],
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        goToFavDetailsScreen = goToFavDetailsScreen,
+                        snack = snackbarHostState
                     )
                 }
             }
         }
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 64.dp)
+    )
+
     }
 }
 
 @Composable
-fun FavItem(data: LocationPOJO, viewModel: FavViewModel) {
+fun FavItem(data: LocationPOJO, viewModel: FavViewModel,goToFavDetailsScreen: (LocationPOJO) -> Unit = {},snack:SnackbarHostState) {
     val city = getAddressFromLocation(data)
-    val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-
-    // Use a Box to properly layer the Snackbar
-    Box(modifier = Modifier.fillMaxSize()) {
         Card(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .clickable { goToFavDetailsScreen(data) },
             elevation = CardDefaults.cardElevation(8.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(colorResource(R.color.cardBackground))
+            colors = CardDefaults.cardColors(colorResource(R.color.cardBackground)),
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
@@ -133,21 +155,21 @@ fun FavItem(data: LocationPOJO, viewModel: FavViewModel) {
                 )
                 Button(
                     onClick = {
-                       // viewModel.deleteFromRoom(data)
                         coroutineScope.launch {
-                            val result = snackbarHostState.showSnackbar(
+                            val result = snack.showSnackbar(
                                 message = "Item deleted",
                                 actionLabel = "Undo",
-                                duration = SnackbarDuration.Short
+                                duration = SnackbarDuration.Short,
+                                withDismissAction = true,
                             )
-                            // Handle the Snackbar result
                             if (result == SnackbarResult.ActionPerformed) {
-                                // Undo the delete action
                                 viewModel.addToRoom(data)
+                            }else{
+                                //viewModel.deleteFromRoom(data)
                             }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(colorResource(R.color.darkBlue)),
+                    colors = ButtonDefaults.buttonColors(colorResource(R.color.cardBackgroundgray)),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(text = "Delete")
@@ -155,13 +177,7 @@ fun FavItem(data: LocationPOJO, viewModel: FavViewModel) {
             }
         }
 
-        // Snackbar Host - Aligned to the bottom of the screen
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
     }
-}
 
 
 
@@ -176,19 +192,3 @@ private fun LoadingIndicatore() {
     }
 }
 
-//@Composable
-//private fun getAddressFromLocation(location: LocationPOJO): String {
-//    val geocoder = Geocoder(LocalContext.current, Locale.getDefault())
-//    return try {
-//        val addresses = geocoder.getFromLocation(location.lat, location.long, 1)
-//        if (addresses != null && addresses.isNotEmpty()) {
-//            val address = addresses[0]
-//            address.getCountryName()
-//        } else {
-//            "Address not found"
-//        }
-//    } catch (e: Exception) {
-//        e.printStackTrace()
-//        "Error fetching address"
-//    }
-//}

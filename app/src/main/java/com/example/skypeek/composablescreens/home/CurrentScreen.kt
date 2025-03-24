@@ -60,8 +60,10 @@ import java.time.format.DateTimeFormatter
 fun HomeScreen(
     homeViewModel: HomeViewModel,
     locationState: MutableState<Location?>,
-    isFAB: MutableState<Boolean>
+    isFAB: MutableState<Boolean>,
+    isNAV: MutableState<Boolean>
 ) {
+    isNAV.value=true
     isFAB.value = false
     val context = LocalContext.current
     val currentWeather by homeViewModel.weather.collectAsStateWithLifecycle()
