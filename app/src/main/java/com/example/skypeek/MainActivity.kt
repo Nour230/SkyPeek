@@ -163,7 +163,7 @@ class MainActivity : ComponentActivity() {
                             }
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.baseline_add_24),
+                                painter = painterResource(R.drawable.baseline_favorite_24),
                                 contentDescription = "Add",
                             )
                         }

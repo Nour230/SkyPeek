@@ -173,7 +173,6 @@ fun WeatherScreen(currentweather: CurrentWeather) {
 
     val mainWeather = currentweather.main
     val nyZoneId = ZoneId.of("Africa/Cairo")
-    // Convert timestamp to ZonedDateTime in New York time zone
     val dateTimeInNY = Instant.ofEpochSecond(currentweather.dt.toLong()).atZone(nyZoneId)
     val isAM = dateTimeInNY.hour < 12
     val composition by rememberLottieComposition(
