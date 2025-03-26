@@ -132,8 +132,8 @@ fun GoogleMapScreen(
             viewModel.insertLocation(latLng.latitude, latLng.longitude)
         } else {
             onLocationSelected(latLng)
-            saveToSharedPrefrence(context = context, "lat", latLng.latitude.toString())
-            saveToSharedPrefrence(context = context, "long", latLng.longitude.toString())
+            saveToSharedPrefrence(context = context,  latLng.latitude.toString(),"lat")
+            saveToSharedPrefrence(context = context, latLng.longitude.toString(),"long")
         }
     }
 

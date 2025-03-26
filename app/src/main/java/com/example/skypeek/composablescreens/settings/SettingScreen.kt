@@ -67,6 +67,8 @@ fun SettingScreen(
                 text = "GPS",
                 isSelected = viewModel.selectedLocation.value.equals("gps", ignoreCase = true),
                 onSelected = { viewModel.setLocation("gps")
+                    deleteSharedPrefrence(context,"lat")
+                    deleteSharedPrefrence(context,"long")
                 if(locationHelper.hasLocationPermissions()){
                     if (locationHelper.isLocationEnabled()) {
                         locationHelper.getFreshLocation { location ->

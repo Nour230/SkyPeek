@@ -73,8 +73,8 @@ fun HomeScreen(
     LaunchedEffect(locationState.value) {
         locationState.value?.let { location ->
             homeViewModel.getWeather(
-                location.latitude,
-                location.longitude,
+                getFromSharedPrefrence(context,"lat")?.toDoubleOrNull() ?: location.latitude,
+                getFromSharedPrefrence(context,"long")?.toDoubleOrNull()?:location.longitude,
                 BuildConfig.apiKeySafe,
                 getFromSharedPrefrence(context, "temperature") ?: "Celsius"
             )
@@ -85,8 +85,8 @@ fun HomeScreen(
     LaunchedEffect(locationState.value) {
         locationState.value?.let { location ->
             homeViewModel.getHourlyWeather(
-                location.latitude,
-                location.longitude,
+                getFromSharedPrefrence(context,"lat")?.toDoubleOrNull() ?: location.latitude,
+                getFromSharedPrefrence(context,"long")?.toDoubleOrNull()?:location.longitude,
                 BuildConfig.apiKeySafe,
                 getFromSharedPrefrence(context, "temperature") ?: "Celsius"
             )
