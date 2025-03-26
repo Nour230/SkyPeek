@@ -53,6 +53,7 @@ import com.example.skypeek.data.models.CurrentWeather
 import com.example.skypeek.data.models.ResponseState
 import java.time.Instant
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -172,9 +173,14 @@ fun WeatherScreen(currentweather: CurrentWeather) {
     val city = currentweather.name
 
     val mainWeather = currentweather.main
-    val nyZoneId = ZoneId.of("Africa/Cairo")
-    val dateTimeInNY = Instant.ofEpochSecond(currentweather.dt.toLong()).atZone(nyZoneId)
-    val isAM = dateTimeInNY.hour < 12
+    // Get the city's timezone offset (in seconds) from OpenWeatherMap API
+    val cityOffsetSeconds = currentweather.timezone
+    val cityZoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofTotalSeconds(cityOffsetSeconds))
+
+    // Convert Unix timestamp to local time of the city
+    val dateTimeInCity = Instant.ofEpochSecond(currentweather.dt.toLong()).atZone(cityZoneId)
+
+    val isAM = dateTimeInCity.hour < 12
     val composition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(
             if (isAM)
@@ -184,7 +190,7 @@ fun WeatherScreen(currentweather: CurrentWeather) {
         )
     )
     // Format the output
-    val formattedDate = dateTimeInNY.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"))
+    val formattedDate = dateTimeInCity.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"))
     val weather = currentweather.weather
 
 

@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.skypeek.data.models.LocationPOJO
 import com.example.skypeek.data.models.ResponseStateFav
 import com.example.skypeek.data.repository.WeatherRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
@@ -14,6 +16,9 @@ import kotlinx.coroutines.launch
 class FavViewModel(val repo: WeatherRepository) : ViewModel() {
     private val _favList = MutableStateFlow<ResponseStateFav>(ResponseStateFav.Loading)
     val favList = _favList.asStateFlow()
+
+    private val _isDeleted = MutableSharedFlow<String>()
+    val isDelete = _isDeleted.asSharedFlow()
 
     init {
         gerFavList()
@@ -38,6 +43,7 @@ class FavViewModel(val repo: WeatherRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 repo.deleteLocation(location)
+                _isDeleted.emit("item deleted from favorite")
             } catch (e: Exception) {
                 _favList.value = ResponseStateFav.Error(e)
             }

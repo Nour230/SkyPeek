@@ -156,6 +156,7 @@ fun FavItem(
     snack: SnackbarHostState
 ) {
     val city = getAddressFromLocation(data)
+    val deleted by viewModel.isDelete.collectAsStateWithLifecycle("item deleted from favorite")
     val coroutineScope = rememberCoroutineScope()
     val isDeleted = remember { mutableStateOf(false) }
     if (!isDeleted.value) {
@@ -183,7 +184,7 @@ fun FavItem(
                         coroutineScope.launch {
                             isDeleted.value = true
                             val result = snack.showSnackbar(
-                                message = "Item deleted",
+                                message = deleted,
                                 actionLabel = "Undo",
                                 duration = SnackbarDuration.Short,
                                 withDismissAction = true,

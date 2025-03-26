@@ -2,14 +2,15 @@ package com.example.skypeek.composablescreens
 
 import android.location.Location
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.skypeek.composablescreens.fav.FavDetailsScreen
 import com.example.skypeek.composablescreens.fav.FavFactory
 import com.example.skypeek.composablescreens.fav.FavScreen
@@ -20,10 +21,12 @@ import com.example.skypeek.composablescreens.fav.map.MapViewModel
 import com.example.skypeek.composablescreens.home.HomeScreen
 import com.example.skypeek.composablescreens.home.HomeViewModel
 import com.example.skypeek.composablescreens.home.WeatherFactory
+import com.example.skypeek.composablescreens.settings.SettingFactory
 import com.example.skypeek.composablescreens.settings.SettingScreen
 import com.example.skypeek.composablescreens.settings.SettingsViewModel
 import com.example.skypeek.composablescreens.splash.SplashScreen
 import com.example.skypeek.composablescreens.utiles.LocalNavController
+import com.example.skypeek.composablescreens.utiles.helpers.LocationHelper
 import com.example.skypeek.data.local.WeatherDataBase
 import com.example.skypeek.data.local.WeatherLocalDataSourceImpl
 import com.example.skypeek.data.remote.WeatherApiService
@@ -39,6 +42,7 @@ fun SetupNavHost(
     isFAB: MutableState<Boolean>,
     isNAV: MutableState<Boolean>
 ) {
+    val context = LocalContext.current
     val navController = LocalNavController.current
     val remoteDataSource = WeatherRemoteDataSource(apiService)
     val localDataSource =
@@ -58,7 +62,9 @@ fun SetupNavHost(
     val favViewModel: FavViewModel = viewModel(
         factory = FavFactory(weatherRepository)
     )
-    val settingViewModel: SettingsViewModel = viewModel()
+    val settingViewModel: SettingsViewModel = viewModel(
+        factory = SettingFactory(context)
+    )
     NavHost(
         navController = navController,
         startDestination = ScreensRoute.SplashScreen.route
@@ -75,7 +81,8 @@ fun SetupNavHost(
             HomeScreen(homeViewModel, locationState, isFAB,isNAV)
         }
         composable(ScreensRoute.SettingScreen.route) {
-            SettingScreen(settingViewModel, isFAB,isNAV)
+            SettingScreen(settingViewModel, isFAB,isNAV,navigateToMAP = {
+                navController.navigate("${ScreensRoute.MapScreen.route}/false")}, LocationHelper(context),locationState)
         }
         composable(ScreensRoute.FavScreen.route) {
             FavScreen(favViewModel, isFAB,isNAV, goToFavDetailsScreen = { locationPOJO ->
@@ -89,8 +96,20 @@ fun SetupNavHost(
             FavDetailsScreen(lat, long, homeViewModel, isFAB,isNAV)
         }
 
-        composable(ScreensRoute.MapScreen.route) {
-            MapScreen(mapViewModel, locationState, isFAB,isNAV)
+        composable(
+            route = "${ScreensRoute.MapScreen.route}/{isFavorite}",
+            arguments = listOf(navArgument("isFavorite") { type = NavType.BoolType })
+        ) { backStackEntry ->
+            val isFavorite = backStackEntry.arguments?.getBoolean("isFavorite") ?: false
+            MapScreen(mapViewModel, locationState, isFAB, isNAV, isFavorite, onLocationSelected = { latLng ->
+                if (!isFavorite) {
+                   locationState.value = Location("").apply {
+                       latitude = latLng.latitude
+                       longitude = latLng.longitude
+                   }
+                   // navController.navigate(ScreensRoute.HomeScreen.route)
+                }
+            })
         }
     }
 }

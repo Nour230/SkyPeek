@@ -1,5 +1,7 @@
 package com.example.skypeek.composablescreens.settings
 
+import android.content.Context
+import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,16 +28,26 @@ import androidx.compose.ui.unit.dp
 import com.example.skypeek.composablescreens.utiles.deleteSharedPrefrence
 import com.example.skypeek.composablescreens.utiles.enums.Temperature
 import com.example.skypeek.composablescreens.utiles.enums.WindSpeed
+import com.example.skypeek.composablescreens.utiles.helpers.LocationHelper
 import com.example.skypeek.composablescreens.utiles.saveToSharedPrefrence
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.gray
 import com.example.skypeek.ui.theme.secbackgroundColor
 
 @Composable
-fun SettingScreen(viewModel: SettingsViewModel, isFAB: MutableState<Boolean>,isNAV: MutableState<Boolean>) {
+fun SettingScreen(
+    viewModel: SettingsViewModel,
+    isFAB: MutableState<Boolean>,
+    isNAV: MutableState<Boolean>,
+    navigateToMAP: () -> Unit,
+    locationHelper: LocationHelper,
+    locationState: MutableState<Location?>
+) {
     isFAB.value = false
     isNAV.value = true
+
     val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -45,195 +57,175 @@ fun SettingScreen(viewModel: SettingsViewModel, isFAB: MutableState<Boolean>,isN
                         cardBackGround, gray, cardBackGround
                     )
                 )
-            ),
+            )
+            .padding(horizontal = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Select Location
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            shape = RoundedCornerShape(16.dp), // Add corner radius
-            colors = CardDefaults.cardColors(containerColor = secbackgroundColor)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Select Location", style = MaterialTheme.typography.titleLarge)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = viewModel.selectedLocation.value == "GPS",
-                            onClick = {
-                                viewModel.setLocation("GPS")
-                                //saveToSharedPrefrence(context = context,"GPS","location")
-                            },
-                            colors = RadioButtonDefaults.colors(selectedColor = cardBackGround)
-                        )
-                        Text(text = "GPS", style = MaterialTheme.typography.labelLarge)
+        SettingsCard(title = "Select Location") {
+            RadioOption(
+                text = "GPS",
+                isSelected = viewModel.selectedLocation.value.equals("gps", ignoreCase = true),
+                onSelected = { viewModel.setLocation("gps")
+                if(locationHelper.hasLocationPermissions()){
+                    if (locationHelper.isLocationEnabled()) {
+                        locationHelper.getFreshLocation { location ->
+                            locationState.value = location
+                        }
+                    } else {
+                        locationHelper.enableLocation()
                     }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = viewModel.selectedLocation.value == "MAP",
-                            onClick = {
-                                viewModel.setLocation("MAP")
-                                //saveToSharedPrefrence(context = context, "MAP", "location")
-                            },
-                            colors = RadioButtonDefaults.colors(selectedColor = cardBackGround)
-                        )
-                        Text(text = "MAP", style = MaterialTheme.typography.labelLarge)
-                    }
+                }}
+            )
+            RadioOption(
+                text = "MAP",
+                isSelected = viewModel.selectedLocation.value.equals("map", ignoreCase = true),
+                onSelected = {
+                    viewModel.setLocation("map")
+                    navigateToMAP()
                 }
-            }
+            )
         }
 
-        // Units of Temperature
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            shape = RoundedCornerShape(16.dp), // Add corner radius
-            colors = CardDefaults.cardColors(containerColor = secbackgroundColor)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Units of Temperature", style = MaterialTheme.typography.titleLarge)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = viewModel.selectedTemperature.value == "Celsius",
-                            onClick = {
-                                viewModel.setTemperature("Celsius")
-                                deleteSharedPrefrence(context, "temperature")
-                                saveToSharedPrefrence(
-                                    context = context,
-                                    Temperature.CELSIUS.toString(), "temperature"
-                                )
-                            },
-                            colors = RadioButtonDefaults.colors(selectedColor = cardBackGround)
-                        )
-                        Text(text = "Celsius", style = MaterialTheme.typography.labelLarge)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = viewModel.selectedTemperature.value == "Fahrenheit",
-                            onClick = {
-                                viewModel.setTemperature("Fahrenheit")
-                                deleteSharedPrefrence(context, "temperature")
-                                saveToSharedPrefrence(
-                                    context = context,
-                                    Temperature.FAHRENHEIT.toString(),
-                                    "temperature"
-                                )
-                            },
-                            modifier = Modifier.padding(start = 8.dp),
-                            colors = RadioButtonDefaults.colors(selectedColor = cardBackGround)
-                        )
-                        Text(text = "Fahrenheit", style = MaterialTheme.typography.labelLarge)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = viewModel.selectedTemperature.value == "Kelvin",
-                            onClick = {
-                                viewModel.setTemperature("Kelvin")
-                                deleteSharedPrefrence(context, "temperature")
-                                saveToSharedPrefrence(
-                                    context = context,
-                                    Temperature.KELVIN.toString(),
-                                    "temperature"
-                                )
-                            },
-                            colors = RadioButtonDefaults.colors(selectedColor = cardBackGround)
-                        )
-                        Text(text = "Kelvin", style = MaterialTheme.typography.labelLarge)
-                    }
+        SettingsCard(title = "Units of Temperature") {
+            RadioOption(
+                text = "Celsius",
+                isSelected = viewModel.selectedTemperature.value.equals(
+                    "celsius",
+                    ignoreCase = true
+                ),
+                onSelected = {
+                    viewModel.setTemperature("celsius")
+                    updateTemperaturePref(context, Temperature.CELSIUS)
                 }
-            }
+            )
+            RadioOption(
+                text = "Fahrenheit",
+                isSelected = viewModel.selectedTemperature.value.equals(
+                    "fahrenheit",
+                    ignoreCase = true
+                ),
+                onSelected = {
+                    viewModel.setTemperature("fahrenheit")
+                    updateTemperaturePref(context, Temperature.FAHRENHEIT)
+                }
+            )
+            RadioOption(
+                text = "Kelvin",
+                isSelected = viewModel.selectedTemperature.value.equals(
+                    "kelvin",
+                    ignoreCase = true
+                ),
+                onSelected = {
+                    viewModel.setTemperature("kelvin")
+                    updateTemperaturePref(context, Temperature.KELVIN)
+                }
+            )
         }
 
-        // Language Selection
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            shape = RoundedCornerShape(16.dp), // Add corner radius
-            colors = CardDefaults.cardColors(containerColor = secbackgroundColor)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Language", style = MaterialTheme.typography.titleLarge)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = viewModel.selectedLanguage.value == "English",
-                            onClick = {
-                                viewModel.setLanguage("English")
-                                //saveToSharedPrefrence(context = context, "English", "language")
-                            },
-                            colors = RadioButtonDefaults.colors(selectedColor = cardBackGround)
-                        )
-                        Text(text = "English", style = MaterialTheme.typography.labelLarge)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = viewModel.selectedLanguage.value == "Arabic",
-                            onClick = {
-                                viewModel.setLanguage("Arabic")
-                                //          saveToSharedPrefrence(context = context, "Arabic", "language")
-                            },
-                            colors = RadioButtonDefaults.colors(selectedColor = cardBackGround)
-                        )
-                        Text(text = "Arabic", style = MaterialTheme.typography.labelLarge)
-                    }
-                }
-            }
+        SettingsCard(title = "Language") {
+            RadioOption(
+                text = "English",
+                isSelected = viewModel.selectedLanguage.value.equals("english", ignoreCase = true),
+                onSelected = { viewModel.setLanguage("english") }
+            )
+            RadioOption(
+                text = "Arabic",
+                isSelected = viewModel.selectedLanguage.value.equals("arabic", ignoreCase = true),
+                onSelected = { viewModel.setLanguage("arabic") }
+            )
         }
 
-        // Units of Wind Speed
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            shape = RoundedCornerShape(16.dp), // Add corner radius
-            colors = CardDefaults.cardColors(containerColor = secbackgroundColor)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Units of Wind Speed", style = MaterialTheme.typography.titleLarge)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = viewModel.selectedWindSpeed.value == "miles/hour",
-                        onClick = {
-                            viewModel.setWindSpeed("miles/hour")
-                            deleteSharedPrefrence(context, "windspeed")
-                            saveToSharedPrefrence(
-                                context = context,
-                                WindSpeed.MILES_HOUR.toString(),
-                                "windspeed"
-                            )
-                        },
-                        colors = RadioButtonDefaults.colors(selectedColor = cardBackGround)
-                    )
-                    Text(text = "Miles/Hour", style = MaterialTheme.typography.labelLarge)
+        SettingsCard(title = "Units of Wind Speed") {
+            RadioOption(
+                text = "Miles/Hour",
+                isSelected = viewModel.selectedWindSpeed.value.equals(
+                    "MILES_HOUR",
+                    ignoreCase = true
+                ),
+                onSelected = {
+                    viewModel.setWindSpeed("MILES_HOUR")
+                    updateWindSpeedPref(context, WindSpeed.MILES_HOUR)
                 }
-                Spacer(modifier = Modifier.width(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = viewModel.selectedWindSpeed.value == "meter/sec",
-                        onClick = {
-                            viewModel.setWindSpeed("meter/sec")
-                            deleteSharedPrefrence(context, "windspeed")
-                            saveToSharedPrefrence(
-                                context,
-                                WindSpeed.MERE_SEC.toString(),
-                                "windspeed"
-                            )
-                        },
-                        colors = RadioButtonDefaults.colors(selectedColor = cardBackGround)
-                    )
-                    Text(text = "Meter/Sec", style = MaterialTheme.typography.labelLarge)
+            )
+            RadioOption(
+                text = "Meter/Sec",
+                isSelected = viewModel.selectedWindSpeed.value.equals(
+                    "MERE_SEC",
+                    ignoreCase = true
+                ),
+                onSelected = {
+                    viewModel.setWindSpeed("MERE_SEC")
+                    updateWindSpeedPref(context, WindSpeed.MERE_SEC)
                 }
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsCard(
+    title: String,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = secbackgroundColor)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                content()
             }
         }
     }
+}
+
+@Composable
+private fun RadioOption(
+    text: String,
+    isSelected: Boolean,
+    onSelected: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        RadioButton(
+            selected = isSelected,
+            onClick = onSelected,
+            colors = RadioButtonDefaults.colors(selectedColor = cardBackGround)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge
+        )
+    }
+}
+
+private fun updateTemperaturePref(context: Context, temperature: Temperature) {
+    deleteSharedPrefrence(context, "temperature")
+    saveToSharedPrefrence(
+        context = context,
+        temperature.toString(),
+        "temperature"
+    )
+}
+
+private fun updateWindSpeedPref(context: Context, windSpeed: WindSpeed) {
+    deleteSharedPrefrence(context, "windspeed")
+    saveToSharedPrefrence(
+        context = context,
+        windSpeed.toString(),
+        "windspeed"
+    )
 }

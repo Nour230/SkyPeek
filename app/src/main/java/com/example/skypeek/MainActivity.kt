@@ -159,7 +159,7 @@ class MainActivity : ComponentActivity() {
                     if (isFAB.value) {
                         FloatingActionButton(
                             onClick = {
-                                navController.navigate(ScreensRoute.MapScreen.route)
+                                navController.navigate("${ScreensRoute.MapScreen.route}/true")
                             }
                         ) {
                             Icon(

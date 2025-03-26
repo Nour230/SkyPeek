@@ -31,12 +31,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.skypeek.R
+import com.example.skypeek.composablescreens.utiles.saveToSharedPrefrence
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.white
@@ -57,7 +59,9 @@ fun MapScreen(
     viewModel: MapViewModel,
     locationState: MutableState<Location?>,
     isFAB: MutableState<Boolean>,
-    isNAV: MutableState<Boolean>
+    isNAV: MutableState<Boolean>,
+    isFAVORITE: Boolean,
+    onLocationSelected: (LatLng) -> Unit = {}
 ) {
     isFAB.value = false
     isNAV.value = false
@@ -66,7 +70,7 @@ fun MapScreen(
     val location by viewModel.location.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        GoogleMapScreen(location, locationState, viewModel)
+        GoogleMapScreen(location, locationState, viewModel, isFAVORITE, onLocationSelected)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -111,41 +115,58 @@ fun MapScreen(
 fun GoogleMapScreen(
     location: Location?,
     locationState: MutableState<Location?>,
-    viewModel: MapViewModel
+    viewModel: MapViewModel,
+    isFAVORITE: Boolean,
+    onLocationSelected: (LatLng) -> Unit = {}
 ) {
+    val context = LocalContext.current
     val permissionState =
         rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
     LaunchedEffect(Unit) {
         permissionState.launchPermissionRequest()
     }
-    MapView(location, locationState, viewModel)
+
+    // Define a callback for when the marker position changes
+    val onAction:  (LatLng) -> Unit = { latLng ->
+        if (isFAVORITE) {
+            viewModel.insertLocation(latLng.latitude, latLng.longitude)
+        } else {
+            onLocationSelected(latLng)
+            saveToSharedPrefrence(context = context, "lat", latLng.latitude.toString())
+            saveToSharedPrefrence(context = context, "long", latLng.longitude.toString())
+        }
+    }
+
+    MapView(
+        location = location,
+        locationState = locationState,
+        actionName = if (isFAVORITE) "Add to Favourites" else "Select Location",
+        onAction = onAction
+    )
 }
 
 @SuppressLint("MissingPermission")
 @Composable
-fun MapView(location: Location?, locationState: MutableState<Location?>, viewModel: MapViewModel) {
-
+fun MapView(
+    location: Location?,
+    locationState: MutableState<Location?>,
+    actionName: String,
+    onAction: (LatLng) -> Unit
+) {
     val cameraPositionState = rememberCameraPositionState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    // Initial marker position (default or first location)
     val markerState = rememberMarkerState(
         position = LatLng(
-            location?.latitude ?: locationState.value?.latitude
-            ?: 0.0, // Use locationState if location is null
-            location?.longitude ?: locationState.value?.longitude
-            ?: 0.0 // Use locationState if location is null
+            location?.latitude ?: locationState.value?.latitude ?: 0.0,
+            location?.longitude ?: locationState.value?.longitude ?: 0.0
         )
     )
 
     LaunchedEffect(location) {
         location?.let {
             val newLatLng = LatLng(it.latitude, it.longitude)
-
-            // Update marker position
             markerState.position = newLatLng
-
-            // Move camera smoothly to new location
             cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(newLatLng, 12f))
         }
     }
@@ -161,7 +182,7 @@ fun MapView(location: Location?, locationState: MutableState<Location?>, viewMod
             }
         ) {
             Marker(
-                state = markerState, // Marker updates dynamically
+                state = markerState,
                 title = "Selected Location",
                 snippet = "Lat: ${markerState.position.latitude}, Lng: ${markerState.position.longitude}"
             )
@@ -192,13 +213,13 @@ fun MapView(location: Location?, locationState: MutableState<Location?>, viewMod
 
                 Button(
                     onClick = {
-                        viewModel.insertLocation(
-                            markerState.position.latitude,
-                            markerState.position.longitude
-                        )
+                        onAction(markerState.position)
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(
-                                message = "Location added to favorites",
+                                message = if (actionName == "Add to Favourites")
+                                    "Location added to favorites"
+                                else
+                                    "Location selected for weather",
                                 duration = SnackbarDuration.Short
                             )
                         }
@@ -208,14 +229,13 @@ fun MapView(location: Location?, locationState: MutableState<Location?>, viewMod
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Add to Favourites",
+                        text = actionName,
                         style = MaterialTheme.typography.titleMedium,
                         color = colorResource(R.color.white),
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
-
         }
 
         SnackbarHost(
