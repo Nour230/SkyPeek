@@ -157,7 +157,7 @@ fun FavItem(
     goToFavDetailsScreen: (LocationPOJO) -> Unit = {},
     snack: SnackbarHostState
 ) {
-    val city = getAddressFromLocation(data)
+    val city = getAddressFromLocation(data.lat, data.long, LocalContext.current)
     val deleted by viewModel.isDelete.collectAsStateWithLifecycle("item deleted from favorite")
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current

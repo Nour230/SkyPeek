@@ -130,7 +130,7 @@ fun GoogleMapScreen(
     // Define a callback for when the marker position changes
     val onAction: (LatLng) -> Unit = { latLng ->
         if (isFAVORITE) {
-            viewModel.insertLocation(latLng.latitude, latLng.longitude)
+            viewModel.insertLocation(latLng.latitude, latLng.longitude,context)
         } else {
             onLocationSelected(latLng)
             saveToSharedPrefrence(context = context, latLng.latitude.toString(), "lat")

@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.example.skypeek.composablescreens.utiles.Converters
 import com.example.skypeek.data.models.LocationPOJO
-
-@Database(entities = [LocationPOJO::class], version = 2)
+@TypeConverters(Converters::class)
+@Database(entities = [LocationPOJO::class], version = 4, exportSchema = false)
 abstract class WeatherDataBase : RoomDatabase(){
     abstract fun dao(): WeatherDao
     companion object{
@@ -19,6 +21,7 @@ abstract class WeatherDataBase : RoomDatabase(){
                     ctx.applicationContext,
                     WeatherDataBase::class.java,
                     DATABASE_NAME)
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
