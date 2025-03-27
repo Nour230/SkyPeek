@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">سكاي بيك</string>
+    <string name="search_places">ابحث عن أماكن</string>
+    <string name="add_to_favourites">أضف إلى المفضلة</string>
+    <string name="select_location">اختر الموقع</string>
+    <string name="lat">خط العرض: %1$s</string>
+    <string name="lng">, خط الطول: %1$s</string>
+    <string name="latitude">خط العرض: %1$s</string>
+    <string name="longitude">خط الطول: %1$s</string>
+    <string name="location_added_to_favorites">تمت إضافة الموقع إلى المفضلة</string>
+    <string name="location_selected_for_weather">تم اختيار الموقع للطقس</string>
+    <string name="city_is">المدينة: %1$s</string>
+    <string name="undo">تراجع</string>
+    <string name="delete">حذف</string>
+    <string name="error">خطأ: %1$s</string>
+    <string name="realfeel">الإحساس الحقيقي</string>
+    <string name="humidity">الرطوبة</string>
+    <string name="min_temp">أدنى درجة</string>
+    <string name="wind">الرياح</string>
+    <string name="pressure">الضغط</string>
+    <string name="max_temp">أعلى درجة</string>
+    <string name="sky_peek">سكاي بيك</string>
+    <string name="gps">جي بي اس</string>
+    <string name="map">خريطة</string>
+    <string name="celsius">مئوية</string>
+    <string name="fahrenheit">فهرنهايت</string>
+    <string name="kelvin">كلفن</string>
+    <string name="language">اللغة</string>
+    <string name="english">الإنجليزية</string>
+    <string name="arabic">العربية</string>
+    <string name="units_of_wind_speed">وحدات سرعة الرياح</string>
+    <string name="miles_hour">ميل/ساعة</string>
+    <string name="meter_sec">متر/ثانية</string>
+    <string name="translation_failed">فشل الترجمة</string>
+    <string name="translation_error">خطأ في الترجمة: %1$s</string>
+    <string name="there_is_no_favorites_yet"> لا يوجد مفضلات حتي الان </string>
+</resources>

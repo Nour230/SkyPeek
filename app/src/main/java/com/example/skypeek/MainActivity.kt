@@ -159,11 +159,21 @@ class MainActivity : ComponentActivity() {
                     if (isFAB.value) {
                         FloatingActionButton(
                             onClick = {
-                                navController.navigate("${ScreensRoute.MapScreen.route}/true")
+                                val currentRoute = navController.currentBackStackEntry?.destination?.route
+                                if (currentRoute != null) {
+                                    when  {
+                                        currentRoute.startsWith(ScreensRoute.FavScreen.route) -> {
+                                            navController.navigate("${ScreensRoute.MapScreen.route}/true")
+                                        }
+                                        currentRoute.startsWith(ScreensRoute.AlertScreen.route)->{
+                                            navController.navigate(ScreensRoute.AlertDetailsScreen.route)
+                                        }
+                                    }
+                                }
                             }
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.baseline_favorite_24),
+                                painter = painterResource(R.drawable.baseline_add_box_24),
                                 contentDescription = "Add",
                             )
                         }

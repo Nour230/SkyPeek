@@ -11,6 +11,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.skypeek.composablescreens.alert.AlertDetailsScreen
+import com.example.skypeek.composablescreens.alert.AlertScreen
 import com.example.skypeek.composablescreens.fav.FavDetailsScreen
 import com.example.skypeek.composablescreens.fav.FavFactory
 import com.example.skypeek.composablescreens.fav.FavScreen
@@ -110,6 +112,12 @@ fun SetupNavHost(
                    // navController.navigate(ScreensRoute.HomeScreen.route)
                 }
             })
+        }
+        composable(ScreensRoute.AlertScreen.route) {
+            AlertScreen(isNAV,isFAB)
+        }
+        composable(ScreensRoute.AlertDetailsScreen.route) {
+            AlertDetailsScreen(isNAV,isFAB)
         }
     }
 }

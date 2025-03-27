@@ -31,4 +31,7 @@
     <string name="units_of_wind_speed">Units of Wind Speed</string>
     <string name="miles_hour">Miles/Hour</string>
     <string name="meter_sec">Meter/Sec</string>
+    <string name="translation_failed">Translation failed</string>
+    <string name="translation_error">Translation error: %1$s</string>
+    <string name="there_is_no_favorites_yet">There is no Favorites yet</string>
 </resources>

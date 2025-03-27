@@ -15,5 +15,9 @@ sealed class ScreensRoute(val route: String) {
     data object MapScreen : ScreensRoute("map")
     @Serializable
     data class FavDetailsScreen(val loc:LocationPOJO) : ScreensRoute("favDetails")
+    @Serializable
+    data object AlertScreen : ScreensRoute("alert")
+    @Serializable
+    data object AlertDetailsScreen : ScreensRoute("search")
 }
 

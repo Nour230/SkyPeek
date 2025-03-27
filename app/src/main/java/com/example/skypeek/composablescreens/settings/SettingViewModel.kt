@@ -75,6 +75,8 @@ class SettingsViewModel(private val context: Context) : ViewModel() {
         saveToSharedPrefrence(context, value, PREF_WIND_SPEED)
         Log.d(TAG, "Saved Wind Speed: $value")
     }
+
+
 }
 
 class SettingFactory(private val context: Context) : ViewModelProvider.Factory {
