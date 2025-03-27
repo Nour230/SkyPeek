@@ -34,4 +34,5 @@
     <string name="translation_failed">Translation failed</string>
     <string name="translation_error">Translation error: %1$s</string>
     <string name="there_is_no_favorites_yet">There is no Favorites yet</string>
+    <string name="temp_is">Temp is:\n</string>
 </resources>

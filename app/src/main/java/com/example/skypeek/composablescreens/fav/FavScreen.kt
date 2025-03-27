@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -162,12 +163,14 @@ fun FavItem(
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val isDeleted = remember { mutableStateOf(false) }
+
     if (!isDeleted.value) {
         Card(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
-                .clickable { goToFavDetailsScreen(data) },
+                .clickable { goToFavDetailsScreen(data) }
+                .height(100.dp),
             elevation = CardDefaults.cardElevation(8.dp),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(colorResource(R.color.cardBackground)),
@@ -177,11 +180,22 @@ fun FavItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = stringResource(R.string.city_is, city),
-                    fontSize = 22.sp,
-                    modifier = Modifier.weight(1f)
-                )
+                Column(
+                    modifier = Modifier.weight(3f),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.city_is, city),
+                        fontSize = 22.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Temp is :${data.currentWeather.main.temp}",
+                        fontSize = 18.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
                 Button(
                     onClick = {
                         coroutineScope.launch {
