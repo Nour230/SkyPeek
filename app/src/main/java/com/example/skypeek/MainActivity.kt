@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
     lateinit var locationState: MutableState<Location?>
     private lateinit var isFAB: MutableState<Boolean>
     private lateinit var isNAV: MutableState<Boolean>
+    private lateinit var showDetails: MutableState<Boolean>
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,7 +95,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             isFAB = remember { mutableStateOf(false) }
             isNAV = remember { mutableStateOf(false) }
-            WeatherApp(weatherApiService, locationState, isFAB, isNAV)
+            showDetails = remember { mutableStateOf(false) }
+            WeatherApp(weatherApiService, locationState, isFAB, isNAV,showDetails)
             FullScreenEffect()
         }
 
@@ -147,7 +149,8 @@ class MainActivity : ComponentActivity() {
         apiService: WeatherApiService,
         locationState: MutableState<Location?>,
         isFAB: MutableState<Boolean>,
-        isNAV: MutableState<Boolean>
+        isNAV: MutableState<Boolean>,
+        showDetails: MutableState<Boolean>
     ) {
         val navController = rememberNavController()
         CompositionLocalProvider(LocalNavController provides navController) {
@@ -166,7 +169,7 @@ class MainActivity : ComponentActivity() {
                                             navController.navigate("${ScreensRoute.MapScreen.route}/true")
                                         }
                                         currentRoute.startsWith(ScreensRoute.AlertScreen.route)->{
-                                            navController.navigate(ScreensRoute.AlertDetailsScreen.route)
+                                            showDetails.value = true
                                         }
                                     }
                                 }
@@ -242,7 +245,8 @@ class MainActivity : ComponentActivity() {
                             .padding(paddingValues),
                         contentAlignment = Alignment.Center
                     ) {
-                        SetupNavHost(apiService, locationState, isFAB, isNAV)
+                        SetupNavHost(apiService, locationState, isFAB, isNAV,showDetails
+                        )
                     }
                 }
             }

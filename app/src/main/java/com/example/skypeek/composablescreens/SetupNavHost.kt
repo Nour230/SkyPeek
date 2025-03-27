@@ -42,7 +42,8 @@ fun SetupNavHost(
     apiService: WeatherApiService,
     locationState: MutableState<Location?>,
     isFAB: MutableState<Boolean>,
-    isNAV: MutableState<Boolean>
+    isNAV: MutableState<Boolean>,
+    showDetails: MutableState<Boolean>
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
@@ -109,15 +110,19 @@ fun SetupNavHost(
                        latitude = latLng.latitude
                        longitude = latLng.longitude
                    }
-                   // navController.navigate(ScreensRoute.HomeScreen.route)
                 }
             })
         }
         composable(ScreensRoute.AlertScreen.route) {
-            AlertScreen(isNAV,isFAB)
+            AlertScreen(isNAV, isFAB,showDetails)
         }
+
         composable(ScreensRoute.AlertDetailsScreen.route) {
-            AlertDetailsScreen(isNAV,isFAB)
+            AlertDetailsScreen(
+                isNAV = isNAV,
+                isFAB = isFAB,
+                onDismiss = { navController.navigate(ScreensRoute.AlertScreen.route) }
+            )
         }
     }
 }

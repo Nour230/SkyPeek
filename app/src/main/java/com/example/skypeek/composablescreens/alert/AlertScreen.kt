@@ -28,19 +28,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.skypeek.R
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.gray
 
 @Composable
-fun AlertScreen(isNAV: MutableState<Boolean>, isFAB: MutableState<Boolean>) {
+fun AlertScreen(
+    isNAV: MutableState<Boolean>,
+    isFAB: MutableState<Boolean>,
+    showDetails: MutableState<Boolean>
+) {
     isNAV.value = true
     isFAB.value = true
     val fav = emptyList<String>()
@@ -76,22 +81,19 @@ fun AlertScreen(isNAV: MutableState<Boolean>, isFAB: MutableState<Boolean>) {
                             .padding(24.dp, bottom = 0.dp)
                             .height(500.dp)
                             .width(500.dp),
-                        composition = com.airbnb.lottie.compose.rememberLottieComposition(
-                            spec = com.airbnb.lottie.compose.LottieCompositionSpec.RawRes(
-                                R.raw.alert_animation
-                            )
+                        composition = rememberLottieComposition(
+                            spec = LottieCompositionSpec.RawRes(R.raw.alert_animation)
                         ).value,
                         iterations = LottieConstants.IterateForever
                     )
                     Text(
-                        text = "No planed Alerts yet",
+                        text = "No planned Alerts yet",
                         fontSize = 24.sp
                     )
                 }
             } else {
                 items(fav.size) {
-                    FavItem(
-                    )
+                    FavItem()
                 }
             }
         }
@@ -101,7 +103,13 @@ fun AlertScreen(isNAV: MutableState<Boolean>, isFAB: MutableState<Boolean>) {
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 64.dp)
         )
-
+    }
+    if (showDetails.value) {
+        AlertDetailsScreen(
+            isNAV = isNAV,
+            isFAB = isFAB,
+            onDismiss = { showDetails.value = false }
+        )
     }
 }
 
