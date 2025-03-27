@@ -34,7 +34,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -158,6 +160,7 @@ fun FavItem(
     val city = getAddressFromLocation(data)
     val deleted by viewModel.isDelete.collectAsStateWithLifecycle("item deleted from favorite")
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     val isDeleted = remember { mutableStateOf(false) }
     if (!isDeleted.value) {
         Card(
@@ -175,7 +178,7 @@ fun FavItem(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "City is : $city",
+                    text = stringResource(R.string.city_is, city),
                     fontSize = 22.sp,
                     modifier = Modifier.weight(1f)
                 )
@@ -185,7 +188,7 @@ fun FavItem(
                             isDeleted.value = true
                             val result = snack.showSnackbar(
                                 message = deleted,
-                                actionLabel = "Undo",
+                                actionLabel = context.getString(R.string.undo),
                                 duration = SnackbarDuration.Short,
                                 withDismissAction = true,
                             )
@@ -199,7 +202,7 @@ fun FavItem(
                     colors = ButtonDefaults.buttonColors(colorResource(R.color.cardBackgroundgray)),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(text = "Delete")
+                    Text(text = stringResource(R.string.delete))
                 }
             }
         }

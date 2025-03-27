@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -124,7 +125,10 @@ fun FavDetailsScreen(
                 when (currentWeather) {
                     is ResponseState.Error -> {
                         Text(
-                            text = "Error: ${(currentWeather as ResponseState.Error).message}",
+                            text = stringResource(
+                                R.string.error,
+                                (currentWeather as ResponseState.Error).message
+                            ),
                             color = Color.White
                         )
                     }
@@ -151,7 +155,10 @@ fun FavDetailsScreen(
                 when (currentHourlyWeather) {
                     is ResponseState.Error -> {
                         Text(
-                            text = "Error: ${(currentHourlyWeather as ResponseState.Error).message}",
+                            text = stringResource(
+                                R.string.error,
+                                (currentHourlyWeather as ResponseState.Error).message
+                            ),
                             color = Color.White
                         )
                     }
@@ -315,7 +322,7 @@ fun WeatherFavDetails(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 WeatherFavDetailItem(
                     icon = R.drawable.temperature,
-                    label = "RealFeel",
+                    label = stringResource(R.string.realfeel),
                     value = "$realFeel°"
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -327,7 +334,7 @@ fun WeatherFavDetails(
                 Spacer(modifier = Modifier.height(16.dp))
                 WeatherFavDetailItem(
                     icon = R.drawable.humidity,
-                    label = "Humidity",
+                    label = stringResource(R.string.humidity),
                     value = "$humidity%"
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -339,7 +346,7 @@ fun WeatherFavDetails(
                 Spacer(modifier = Modifier.height(16.dp))
                 WeatherFavDetailItem(
                     icon = R.drawable.max_temp,
-                    label = "Min_Temp",
+                    label = stringResource(R.string.min_temp),
                     value = "$min °"
                 )
             }
@@ -353,7 +360,7 @@ fun WeatherFavDetails(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 WeatherFavDetailItem(
                     icon = R.drawable.wind,
-                    label = "Wind",
+                    label = stringResource(R.string.wind),
                     value = "$windSpeed $windUnit"
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -363,7 +370,7 @@ fun WeatherFavDetails(
                     color = Color.White.copy(alpha = 0.5f)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                WeatherFavDetailItem(icon = R.drawable.pressure, label = "Pressure", value = pressure)
+                WeatherFavDetailItem(icon = R.drawable.pressure, label = stringResource(R.string.pressure), value = pressure)
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(
                     modifier = Modifier.width(180.dp),
@@ -371,7 +378,7 @@ fun WeatherFavDetails(
                     color = Color.White.copy(alpha = 0.5f)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                WeatherFavDetailItem(icon = R.drawable.max_temp, label = "Max_Temp", value = "$max °")
+                WeatherFavDetailItem(icon = R.drawable.max_temp, label = stringResource(R.string.max_temp), value = "$max °")
             }
         }
     }

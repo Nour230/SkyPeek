@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -80,7 +81,7 @@ fun MapScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChanged(it) },
-                label = { Text("Search Places") },
+                label = { Text(stringResource(R.string.search_places)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -127,20 +128,22 @@ fun GoogleMapScreen(
     }
 
     // Define a callback for when the marker position changes
-    val onAction:  (LatLng) -> Unit = { latLng ->
+    val onAction: (LatLng) -> Unit = { latLng ->
         if (isFAVORITE) {
             viewModel.insertLocation(latLng.latitude, latLng.longitude)
         } else {
             onLocationSelected(latLng)
-            saveToSharedPrefrence(context = context,  latLng.latitude.toString(),"lat")
-            saveToSharedPrefrence(context = context, latLng.longitude.toString(),"long")
+            saveToSharedPrefrence(context = context, latLng.latitude.toString(), "lat")
+            saveToSharedPrefrence(context = context, latLng.longitude.toString(), "long")
         }
     }
 
     MapView(
         location = location,
         locationState = locationState,
-        actionName = if (isFAVORITE) "Add to Favourites" else "Select Location",
+        actionName = if (isFAVORITE) stringResource(R.string.add_to_favourites) else stringResource(
+            R.string.select_location
+        ),
         onAction = onAction
     )
 }
@@ -156,6 +159,7 @@ fun MapView(
     val cameraPositionState = rememberCameraPositionState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     val markerState = rememberMarkerState(
         position = LatLng(
             location?.latitude ?: locationState.value?.latitude ?: 0.0,
@@ -183,8 +187,12 @@ fun MapView(
         ) {
             Marker(
                 state = markerState,
-                title = "Selected Location",
-                snippet = "Lat: ${markerState.position.latitude}, Lng: ${markerState.position.longitude}"
+                title = stringResource(
+                    R.string.select_location
+                ),
+                snippet = stringResource(R.string.lat, markerState.position.latitude) + stringResource(
+                    R.string.lng, markerState.position.longitude
+                )
             )
         }
         Card(
@@ -201,14 +209,15 @@ fun MapView(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Selected Location",
+                    text = stringResource(
+                        R.string.select_location),
                     style = MaterialTheme.typography.titleMedium,
                     color = colorResource(R.color.black),
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Latitude: ${markerState.position.latitude}")
-                Text(text = "Longitude: ${markerState.position.longitude}")
+                Text(text = stringResource(R.string.latitude, markerState.position.latitude))
+                Text(text = stringResource(R.string.longitude, markerState.position.longitude))
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Button(
@@ -216,10 +225,10 @@ fun MapView(
                         onAction(markerState.position)
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(
-                                message = if (actionName == "Add to Favourites")
-                                    "Location added to favorites"
+                                message = if (actionName == context.getString(R.string.add_to_favourites))
+                                    context.getString(R.string.location_added_to_favorites)
                                 else
-                                    "Location selected for weather",
+                                    context.getString(R.string.location_selected_for_weather),
                                 duration = SnackbarDuration.Short
                             )
                         }

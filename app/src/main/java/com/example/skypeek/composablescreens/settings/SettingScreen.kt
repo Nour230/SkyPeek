@@ -24,7 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.skypeek.R
 import com.example.skypeek.composablescreens.utiles.deleteSharedPrefrence
 import com.example.skypeek.composablescreens.utiles.enums.Temperature
 import com.example.skypeek.composablescreens.utiles.enums.WindSpeed
@@ -62,25 +64,31 @@ fun SettingScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        SettingsCard(title = "Select Location") {
+        SettingsCard(
+            title = stringResource(
+                R.string.select_location
+            )
+        ) {
             RadioOption(
-                text = "GPS",
+                text = stringResource(R.string.gps),
                 isSelected = viewModel.selectedLocation.value.equals("gps", ignoreCase = true),
-                onSelected = { viewModel.setLocation("gps")
-                    deleteSharedPrefrence(context,"lat")
-                    deleteSharedPrefrence(context,"long")
-                if(locationHelper.hasLocationPermissions()){
-                    if (locationHelper.isLocationEnabled()) {
-                        locationHelper.getFreshLocation { location ->
-                            locationState.value = location
+                onSelected = {
+                    viewModel.setLocation("gps")
+                    deleteSharedPrefrence(context, "lat")
+                    deleteSharedPrefrence(context, "long")
+                    if (locationHelper.hasLocationPermissions()) {
+                        if (locationHelper.isLocationEnabled()) {
+                            locationHelper.getFreshLocation { location ->
+                                locationState.value = location
+                            }
+                        } else {
+                            locationHelper.enableLocation()
                         }
-                    } else {
-                        locationHelper.enableLocation()
                     }
-                }}
+                }
             )
             RadioOption(
-                text = "MAP",
+                text = stringResource(R.string.map),
                 isSelected = viewModel.selectedLocation.value.equals("map", ignoreCase = true),
                 onSelected = {
                     viewModel.setLocation("map")
@@ -91,7 +99,7 @@ fun SettingScreen(
 
         SettingsCard(title = "Units of Temperature") {
             RadioOption(
-                text = "Celsius",
+                text = stringResource(R.string.celsius),
                 isSelected = viewModel.selectedTemperature.value.equals(
                     "celsius",
                     ignoreCase = true
@@ -102,7 +110,7 @@ fun SettingScreen(
                 }
             )
             RadioOption(
-                text = "Fahrenheit",
+                text = stringResource(R.string.fahrenheit),
                 isSelected = viewModel.selectedTemperature.value.equals(
                     "fahrenheit",
                     ignoreCase = true
@@ -113,7 +121,7 @@ fun SettingScreen(
                 }
             )
             RadioOption(
-                text = "Kelvin",
+                text = stringResource(R.string.kelvin),
                 isSelected = viewModel.selectedTemperature.value.equals(
                     "kelvin",
                     ignoreCase = true
@@ -125,22 +133,22 @@ fun SettingScreen(
             )
         }
 
-        SettingsCard(title = "Language") {
+        SettingsCard(title = stringResource(R.string.language)) {
             RadioOption(
-                text = "English",
+                text = stringResource(R.string.english),
                 isSelected = viewModel.selectedLanguage.value.equals("english", ignoreCase = true),
                 onSelected = { viewModel.setLanguage("english") }
             )
             RadioOption(
-                text = "Arabic",
+                text = stringResource(R.string.arabic),
                 isSelected = viewModel.selectedLanguage.value.equals("arabic", ignoreCase = true),
                 onSelected = { viewModel.setLanguage("arabic") }
             )
         }
 
-        SettingsCard(title = "Units of Wind Speed") {
+        SettingsCard(title = stringResource(R.string.units_of_wind_speed)) {
             RadioOption(
-                text = "Miles/Hour",
+                text = stringResource(R.string.miles_hour),
                 isSelected = viewModel.selectedWindSpeed.value.equals(
                     "MILES_HOUR",
                     ignoreCase = true
@@ -151,7 +159,7 @@ fun SettingScreen(
                 }
             )
             RadioOption(
-                text = "Meter/Sec",
+                text = stringResource(R.string.meter_sec),
                 isSelected = viewModel.selectedWindSpeed.value.equals(
                     "MERE_SEC",
                     ignoreCase = true

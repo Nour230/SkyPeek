@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,12 +57,13 @@ fun SplashScreen(
                 .padding(top = 170.dp)
         )
         Text(
-            text = "SKYPEEK",
+            text = stringResource(R.string.sky_peek),
             fontSize = 32.sp,
             color = loyalBlue,
             fontFamily = FontFamily.Monospace,
             modifier = Modifier
                 .align(Alignment.Center)
+                .padding(top = 100.dp)
         )
     }
 }

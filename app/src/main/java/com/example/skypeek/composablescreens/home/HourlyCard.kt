@@ -34,29 +34,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/*@Composable
-fun Weather(weather: WeatherResponse) {
-    val currentDate = SimpleDateFormat("yyyy-MM-dd ", Locale.getDefault()).format(Date())
-    val currentDayWeather = weather.list.filter {
-        it.dt_txt.startsWith(currentDate)
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-    ) {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(currentDayWeather.size) {
-                DailyWeatherItem(currentDayWeather[it])
-            }
-        }
-    }
-}*/
 
 @Composable
 fun Weather(weather: WeatherResponse) {

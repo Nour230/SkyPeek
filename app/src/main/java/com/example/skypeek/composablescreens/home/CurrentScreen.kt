@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -112,7 +113,10 @@ fun HomeScreen(
                 when (currentWeather) {
                     is ResponseState.Error -> {
                         Text(
-                            text = "Error: ${(currentWeather as ResponseState.Error).message}",
+                            text = stringResource(
+                                R.string.error,
+                                (currentWeather as ResponseState.Error).message
+                            ),
                             color = Color.White
                         )
                     }
@@ -139,7 +143,7 @@ fun HomeScreen(
                 when (currentHourlyWeather) {
                     is ResponseState.Error -> {
                         Text(
-                            text = "Error: ${(currentHourlyWeather as ResponseState.Error).message}",
+                            text = stringResource(R.string.error, (currentHourlyWeather as ResponseState.Error).message),
                             color = Color.White
                         )
                     }

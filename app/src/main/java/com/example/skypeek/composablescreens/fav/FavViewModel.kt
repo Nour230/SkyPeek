@@ -50,15 +50,6 @@ class FavViewModel(val repo: WeatherRepository) : ViewModel() {
         }
     }
 
-    fun addToRoom(location: LocationPOJO){
-        viewModelScope.launch {
-            try {
-                repo.insertLocation(location)
-            } catch (e: Exception) {
-                _favList.value = ResponseStateFav.Error(e)
-            }
-        }
-    }
 }
 
 
