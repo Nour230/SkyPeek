@@ -178,7 +178,7 @@ fun FavItem(
                 .padding(16.dp)
                 .fillMaxWidth()
                 .clickable { goToFavDetailsScreen(data) }
-                .height(100.dp),
+                .height(150.dp),
             elevation = CardDefaults.cardElevation(8.dp),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(colorResource(R.color.cardBackground)),

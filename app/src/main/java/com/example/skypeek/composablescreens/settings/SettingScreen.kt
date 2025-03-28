@@ -147,6 +147,12 @@ fun SettingScreen(
                 onSelected = { viewModel.setLanguage("arabic")
                 changeLanguage(context,"ar","language")}
             )
+            RadioOption(
+                text = stringResource(R.string.korean),
+                isSelected = viewModel.selectedLanguage.value.equals("korean", ignoreCase = true),
+                onSelected = { viewModel.setLanguage("korean")
+                changeLanguage(context,"kr","language")}
+            )
         }
 
         SettingsCard(title = stringResource(R.string.units_of_wind_speed)) {

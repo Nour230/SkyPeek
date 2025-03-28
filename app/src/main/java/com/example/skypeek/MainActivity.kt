@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // Initialize Places API
         if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, "AIzaSyCaj10hgcwGaosoYRyv79ppLviFJ9eMNmM")
+            Places.initialize(applicationContext, "")
         }
         enableEdgeToEdge()
 

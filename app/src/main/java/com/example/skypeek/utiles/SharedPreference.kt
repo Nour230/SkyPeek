@@ -31,5 +31,6 @@ fun setLanguage(context: Context, languageCode: String, LANGUAGE_KEY: String) {
 
 fun getLanguage(context: Context, LANGUAGE_KEY: String): String {
     val prefs: SharedPreferences = context.getSharedPreferences("myPref", Context.MODE_PRIVATE)
+    Log.i("TAG", "getLanguage: ${prefs.getString(LANGUAGE_KEY, "en")}")
     return prefs.getString(LANGUAGE_KEY, "en") ?: "en"
 }}

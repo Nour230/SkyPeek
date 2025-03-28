@@ -28,6 +28,7 @@
     <string name="language">Language</string>
     <string name="english">English</string>
     <string name="arabic">Arabic</string>
+    <string name="korean">Korean</string>
     <string name="units_of_wind_speed">Units of Wind Speed</string>
     <string name="miles_hour">Miles/Hour</string>
     <string name="meter_sec">Meter/Sec</string>

@@ -4,10 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import com.example.skypeek.MainActivity
 import com.example.skypeek.utiles.SharedPreference
 import java.util.*
