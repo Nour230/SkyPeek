@@ -1,5 +1,6 @@
 package com.example.skypeek
 
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Build
@@ -44,10 +45,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.example.skypeek.composablescreens.ScreensRoute
 import com.example.skypeek.composablescreens.SetupNavHost
-import com.example.skypeek.composablescreens.utiles.LocalNavController
-import com.example.skypeek.composablescreens.utiles.enums.NavigationBarItems
-import com.example.skypeek.composablescreens.utiles.helpers.LocationHelper
-import com.example.skypeek.composablescreens.utiles.helpers.REQUEST_LOCATION_PERMISSION
+import com.example.skypeek.utiles.LocalNavController
+import com.example.skypeek.utiles.enums.NavigationBarItems
+import com.example.skypeek.utiles.helpers.LocationHelper
+import com.example.skypeek.utiles.helpers.REQUEST_LOCATION_PERMISSION
 import com.example.skypeek.data.remote.RetrofitHelper.weatherApiService
 import com.example.skypeek.data.remote.WeatherApiService
 import com.example.skypeek.ui.screenshelper.customShadow
@@ -56,6 +57,8 @@ import com.example.skypeek.ui.theme.black
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.secbackgroundColor
+import com.example.skypeek.utiles.SharedPreference
+import com.example.skypeek.utiles.helpers.LocaleHelper
 import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
 import com.exyte.animatednavbar.animation.indendshape.Height
@@ -70,12 +73,17 @@ class MainActivity : ComponentActivity() {
     private lateinit var isNAV: MutableState<Boolean>
     private lateinit var showDetails: MutableState<Boolean>
 
+    override fun attachBaseContext(newBase: Context?) {
+            val language = SharedPreference.getLanguage(newBase!!, "language")
+        super.attachBaseContext(LocaleHelper.setLocale(newBase,language))
+
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Initialize Places API
         if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, "AIzaSyCaj10hgcwGaosoYRyv79ppLviFJ9eMNmM")
+            Places.initialize(applicationContext, "")
         }
         enableEdgeToEdge()
 

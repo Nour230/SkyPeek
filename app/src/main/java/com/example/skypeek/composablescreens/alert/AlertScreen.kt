@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -87,7 +88,7 @@ fun AlertScreen(
                         iterations = LottieConstants.IterateForever
                     )
                     Text(
-                        text = "No planned Alerts yet",
+                        text = stringResource(R.string.no_planned_alerts_yet),
                         fontSize = 24.sp
                     )
                 }
@@ -152,7 +153,7 @@ fun FavItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "delete",
+                        text = stringResource(R.string.delete),
                         style = MaterialTheme.typography.titleMedium,
                         color = colorResource(R.color.white),
                         fontWeight = FontWeight.Bold

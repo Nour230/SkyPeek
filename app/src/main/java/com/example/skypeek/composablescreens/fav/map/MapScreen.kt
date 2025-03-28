@@ -39,10 +39,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.skypeek.R
-import com.example.skypeek.composablescreens.utiles.saveToSharedPrefrence
+import com.example.skypeek.utiles.saveToSharedPrefrence
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.white
+import com.example.skypeek.utiles.helpers.formatNumberBasedOnLanguage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -130,7 +131,7 @@ fun GoogleMapScreen(
     // Define a callback for when the marker position changes
     val onAction: (LatLng) -> Unit = { latLng ->
         if (isFAVORITE) {
-            viewModel.insertLocation(latLng.latitude, latLng.longitude)
+            viewModel.insertLocation(latLng.latitude, latLng.longitude,context)
         } else {
             onLocationSelected(latLng)
             saveToSharedPrefrence(context = context, latLng.latitude.toString(), "lat")
@@ -190,8 +191,8 @@ fun MapView(
                 title = stringResource(
                     R.string.select_location
                 ),
-                snippet = stringResource(R.string.lat, markerState.position.latitude) + stringResource(
-                    R.string.lng, markerState.position.longitude
+                snippet = stringResource(R.string.lat, formatNumberBasedOnLanguage(context,markerState.position.latitude)) + stringResource(
+                    R.string.lng, formatNumberBasedOnLanguage(context,markerState.position.longitude)
                 )
             )
         }
@@ -216,8 +217,8 @@ fun MapView(
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = stringResource(R.string.latitude, markerState.position.latitude))
-                Text(text = stringResource(R.string.longitude, markerState.position.longitude))
+                Text(text = stringResource(R.string.latitude, formatNumberBasedOnLanguage(context,markerState.position.latitude)))
+                Text(text = stringResource(R.string.longitude, formatNumberBasedOnLanguage(context,markerState.position.longitude)))
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Button(

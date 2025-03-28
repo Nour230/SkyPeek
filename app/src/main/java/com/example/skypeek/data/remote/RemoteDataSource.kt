@@ -10,13 +10,15 @@ interface RemoteDataSource {
         lat: Double,
         lon: Double,
         apiKey: String,
-        units: String
+        units: String,
+        lang:String
     ): Flow<CurrentWeather>
 
     suspend fun getHourlyWeather(
         lat: Double,
         lon: Double,
         apiKey: String,
-        units: String
+        units: String,
+        lang:String
     ): Flow<WeatherResponse>
 }

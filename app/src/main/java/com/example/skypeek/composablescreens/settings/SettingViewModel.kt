@@ -6,8 +6,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.skypeek.composablescreens.utiles.getFromSharedPrefrence
-import com.example.skypeek.composablescreens.utiles.saveToSharedPrefrence
+import com.example.skypeek.utiles.getFromSharedPrefrence
+import com.example.skypeek.utiles.saveToSharedPrefrence
 
 class SettingsViewModel(private val context: Context) : ViewModel() {
 

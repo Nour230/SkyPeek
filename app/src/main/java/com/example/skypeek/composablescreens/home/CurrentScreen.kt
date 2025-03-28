@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,15 +48,21 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.skypeek.BuildConfig
 import com.example.skypeek.R
-import com.example.skypeek.composablescreens.utiles.getFromSharedPrefrence
-import com.example.skypeek.composablescreens.utiles.helpers.setUnitSymbol
-import com.example.skypeek.composablescreens.utiles.helpers.setWindSpeedSymbol
+import com.example.skypeek.utiles.getFromSharedPrefrence
+import com.example.skypeek.utiles.helpers.internet.ConnectivityObserver
+import com.example.skypeek.utiles.helpers.internet.checkForInternet
+import com.example.skypeek.utiles.helpers.setUnitSymbol
+import com.example.skypeek.utiles.helpers.setWindSpeedSymbol
 import com.example.skypeek.data.models.CurrentWeather
 import com.example.skypeek.data.models.ResponseState
+import com.example.skypeek.utiles.SharedPreference
+import com.example.skypeek.utiles.helpers.formatNumberBasedOnLanguage
+import com.example.skypeek.utiles.helpers.formatTemperatureUnitBasedOnLanguage
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import kotlin.properties.Delegates
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -65,32 +72,49 @@ fun HomeScreen(
     isFAB: MutableState<Boolean>,
     isNAV: MutableState<Boolean>
 ) {
-    isNAV.value=true
+    isNAV.value = true
     isFAB.value = false
     val context = LocalContext.current
+
     val currentWeather by homeViewModel.weather.collectAsStateWithLifecycle()
     val currentHourlyWeather by homeViewModel.hourlyWeather.collectAsStateWithLifecycle()
+    val connectivityObserver = remember { ConnectivityObserver(context) }
+    val isConnected by connectivityObserver.isConnected.collectAsStateWithLifecycle(
+        initialValue = checkForInternet(
+            context
+        )
+    )
 
-    LaunchedEffect(locationState.value) {
-        locationState.value?.let { location ->
-            homeViewModel.getWeather(
-                getFromSharedPrefrence(context,"lat")?.toDoubleOrNull() ?: location.latitude,
-                getFromSharedPrefrence(context,"long")?.toDoubleOrNull()?:location.longitude,
-                BuildConfig.apiKeySafe,
-                getFromSharedPrefrence(context, "temperature") ?: "Celsius"
-            )
+    // Lottie composition for error animation
+    val errorComposition by rememberLottieComposition(
+        spec = LottieCompositionSpec.RawRes(R.raw.animation) // Replace with your Lottie file
+    )
+    LaunchedEffect(isConnected) {
+        if (isConnected) {
+            locationState.value?.let { location ->
+                homeViewModel.getWeather(
+                    getFromSharedPrefrence(context, "lat")?.toDoubleOrNull() ?: location.latitude,
+                    getFromSharedPrefrence(context, "long")?.toDoubleOrNull() ?: location.longitude,
+                    BuildConfig.apiKeySafe,
+                    getFromSharedPrefrence(context, "temperature") ?: "Celsius",
+                    SharedPreference.getLanguage(context,"language")
+                )
+            }
         }
     }
 
 
-    LaunchedEffect(locationState.value) {
-        locationState.value?.let { location ->
-            homeViewModel.getHourlyWeather(
-                getFromSharedPrefrence(context,"lat")?.toDoubleOrNull() ?: location.latitude,
-                getFromSharedPrefrence(context,"long")?.toDoubleOrNull()?:location.longitude,
-                BuildConfig.apiKeySafe,
-                getFromSharedPrefrence(context, "temperature") ?: "Celsius"
-            )
+    LaunchedEffect(isConnected) {
+        if (isConnected) {
+            locationState.value?.let { location ->
+                homeViewModel.getHourlyWeather(
+                    getFromSharedPrefrence(context, "lat")?.toDoubleOrNull() ?: location.latitude,
+                    getFromSharedPrefrence(context, "long")?.toDoubleOrNull() ?: location.longitude,
+                    BuildConfig.apiKeySafe,
+                    getFromSharedPrefrence(context, "temperature") ?: "Celsius",
+                    SharedPreference.getLanguage(context,"language")
+                )
+            }
         }
     }
 
@@ -107,22 +131,15 @@ fun HomeScreen(
             .background(Color.Black.copy(alpha = 0.6f))
     ) {
         LazyColumn {
-
             // Current Weather Section
             item {
                 when (currentWeather) {
                     is ResponseState.Error -> {
-                        Text(
-                            text = stringResource(
-                                R.string.error,
-                                (currentWeather as ResponseState.Error).message
-                            ),
-                            color = Color.White
-                        )
+                        Log.i("TAG", "HomeScreen: ${currentWeather as ResponseState.Error}")
                     }
 
                     is ResponseState.Loading -> {
-                        LoadingIndicatore()
+                       // LoadingIndicatore()
                     }
 
                     is ResponseState.Success -> {
@@ -140,19 +157,22 @@ fun HomeScreen(
 
             // Hourly Weather Section
             item {
-                when (currentHourlyWeather) {
-                    is ResponseState.Error -> {
-                        Text(
-                            text = stringResource(R.string.error, (currentHourlyWeather as ResponseState.Error).message),
-                            color = Color.White
-                        )
+                when {
+
+                    !isConnected -> {
+                        ErrorAnimation(errorComposition)
                     }
 
-                    is ResponseState.Loading -> {
+                    currentHourlyWeather is ResponseState.Error -> {
+
+                        Text(text = "Error loading hourly weather data ${currentHourlyWeather as ResponseState.Error}")
+                    }
+
+                    currentHourlyWeather is ResponseState.Loading -> {
                         LoadingIndicatore()
                     }
 
-                    is ResponseState.SuccessForecast -> {
+                    currentHourlyWeather is ResponseState.SuccessForecast -> {
                         Weather((currentHourlyWeather as ResponseState.SuccessForecast).data)
                         WeatherForecastScreen((currentHourlyWeather as ResponseState.SuccessForecast).data)
 
@@ -174,9 +194,11 @@ fun HomeScreen(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WeatherScreen(currentweather: CurrentWeather) {
+    val context = LocalContext.current
     val city = currentweather.name
 
     val mainWeather = currentweather.main
+
     // Get the city's timezone offset (in seconds) from OpenWeatherMap API
     val cityOffsetSeconds = currentweather.timezone
     val cityZoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofTotalSeconds(cityOffsetSeconds))
@@ -213,14 +235,19 @@ fun WeatherScreen(currentweather: CurrentWeather) {
             TopBar(location = city)
 
             Spacer(modifier = Modifier.height(32.dp))
-
+            val lang = SharedPreference.getLanguage(context = LocalContext.current, "language")
+            val tempText = if (lang == "ar") {
+                formatNumberBasedOnLanguage(LocalContext.current, mainWeather.temp.toInt().toString())
+            } else {
+                mainWeather.temp.toInt().toString()
+            }
             // Weather Icon and Temperature
             WeatherMainInfo(
-                temperature = mainWeather.temp.toInt(),
+                temperature = tempText,
                 desc = weather.firstOrNull()?.description ?: "N/A",
                 cloud = currentweather.clouds.all.toString(),
                 composition = composition,
-                units = getFromSharedPrefrence(LocalContext.current, "temperature") ?: "Celsius"
+                units = getFromSharedPrefrence(context, "temperature") ?: "Celsius"
             )
 
             Spacer(modifier = Modifier.height(22.dp))
@@ -231,8 +258,8 @@ fun WeatherScreen(currentweather: CurrentWeather) {
                 humidity = mainWeather.humidity,
                 windSpeed = currentweather.wind.speed.toString(),
                 pressure = mainWeather.pressure.toString(),
-                date = formattedDate,
-                units = getFromSharedPrefrence(LocalContext.current, "windspeed") ?: "m/s"
+                date = formatNumberBasedOnLanguage(context,formattedDate),
+                units = getFromSharedPrefrence(context, "windspeed") ?: "m/s"
             )
         }
     }
@@ -241,9 +268,13 @@ fun WeatherScreen(currentweather: CurrentWeather) {
 
 @Composable
 fun WeatherMainInfo(
-    temperature: Int, composition:
-    LottieComposition?, desc: String, cloud: String, units: String
+    temperature: String, // Changed to String
+    composition: LottieComposition?,
+    desc: String,
+    cloud: String,
+    units: String
 ) {
+    val context = LocalContext.current
     val tempUnit = setUnitSymbol(units)
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -256,7 +287,7 @@ fun WeatherMainInfo(
                 .height(200.dp)
         )
         Text(
-            text = "$temperature $tempUnit",
+            text = temperature +formatTemperatureUnitBasedOnLanguage(tempUnit),
             color = Color.White,
             fontSize = 64.sp,
             fontWeight = FontWeight.Bold
@@ -268,7 +299,7 @@ fun WeatherMainInfo(
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "Cloud: $cloud%",
+            text = stringResource(R.string.cloud) +" ${formatNumberBasedOnLanguage(context, cloud)}%",
             color = Color.White,
             fontSize = 16.sp
         )
@@ -284,10 +315,12 @@ fun WeatherDetails(
     date: String,
     units: String
 ) {
+    val context = LocalContext.current
     val windUnit = setWindSpeedSymbol(units)
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = date,
+            text = date, // Date formatting should already respect locale
             color = Color.White.copy(alpha = 0.7f),
             fontSize = 16.sp
         )
@@ -300,8 +333,8 @@ fun WeatherDetails(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 WeatherDetailItem(
                     icon = R.drawable.temperature,
-                    label = "RealFeel",
-                    value = "$realFeel°"
+                    label = stringResource(R.string.realfeel),
+                    value = "${formatNumberBasedOnLanguage(context, realFeel)}°"
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(
@@ -312,22 +345,21 @@ fun WeatherDetails(
                 Spacer(modifier = Modifier.height(16.dp))
                 WeatherDetailItem(
                     icon = R.drawable.humidity,
-                    label = "Humidity",
-                    value = "$humidity%"
+                    label = stringResource(R.string.humidity),
+                    value = "${formatNumberBasedOnLanguage(context, humidity)}%"
                 )
             }
-            // Vertical Divider
             Box(
                 modifier = Modifier
                     .width(1.dp)
-                    .height(130.dp) // Adjust height as needed
+                    .height(130.dp)
                     .background(Color.White.copy(alpha = 0.5f))
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 WeatherDetailItem(
                     icon = R.drawable.wind,
-                    label = "Wind",
-                    value = "$windSpeed $windUnit"
+                    label = stringResource(R.string.wind),
+                    value = formatNumberBasedOnLanguage(context, windSpeed) + formatTemperatureUnitBasedOnLanguage(windUnit)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(
@@ -336,7 +368,11 @@ fun WeatherDetails(
                     color = Color.White.copy(alpha = 0.5f)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                WeatherDetailItem(icon = R.drawable.pressure, label = "Pressure", value = pressure)
+                WeatherDetailItem(
+                    icon = R.drawable.pressure,
+                    label = stringResource(R.string.pressure),
+                    value = formatNumberBasedOnLanguage(context, pressure)
+                )
             }
         }
     }
@@ -416,6 +452,31 @@ fun TopBar(location: String) {
             color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+
+@Composable
+fun ErrorAnimation(composition: LottieComposition?) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        LottieAnimation(
+            composition = composition,
+            iterations = LottieConstants.IterateForever,
+            modifier = Modifier.size(500.dp)
+        )
+        Text(
+            text = "Error loading weather data",
+            color = Color.White,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(top = 16.dp)
         )
     }
 }

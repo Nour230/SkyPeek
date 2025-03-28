@@ -1,4 +1,4 @@
-package com.example.skypeek.composablescreens.utiles.enums
+package com.example.skypeek.utiles.enums
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call

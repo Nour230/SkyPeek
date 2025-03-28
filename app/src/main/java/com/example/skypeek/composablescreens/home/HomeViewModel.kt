@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.skypeek.composablescreens.utiles.helpers.convertUnit
+import com.example.skypeek.utiles.helpers.convertUnit
 import com.example.skypeek.data.models.ResponseState
 import com.example.skypeek.data.repository.WeatherRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,32 +25,31 @@ class HomeViewModel (private val repo:WeatherRepository):ViewModel(){
     val error  = mutableError.asSharedFlow()
 
 
-    fun getWeather(lat: Double, lon: Double, apiKey: String,units:String) {
-        val tempUnite = convertUnit(units)
+    fun getWeather(lat: Double, lon: Double, apiKey: String, units: String, lang:String) {
+        val tempUnit = convertUnit(units)
         viewModelScope.launch {
             try {
-                val response = repo.fetchWeather(lat, lon, apiKey,tempUnite)
-                response.catch {ex->
-                    mutableWeather.value = ResponseState.Error(ex)
-                    mutableError.emit(ex.message.toString())
-                }.collect{
-                    mutableWeather.value = ResponseState.Success(it)
-                }
+                mutableWeather.value = ResponseState.Loading
+                repo.fetchWeather(lat, lon, apiKey, tempUnit,lang)
+                    .collect { response ->
+                        mutableWeather.value = ResponseState.Success(response)
+                    }
             } catch (e: Exception) {
-                mutableError.emit(e.message.toString())
                 Log.e("HomeViewModel", "Error fetching weather: ${e.localizedMessage}")
+                mutableError.emit(e.message.toString())
+                mutableWeather.value = ResponseState.Error(e)
             }
         }
     }
 
 
-    fun getHourlyWeather(lat: Double, lon: Double, apiKey: String,units:String) {
+
+    fun getHourlyWeather(lat: Double, lon: Double, apiKey: String,units:String, lang:String) {
         val tempUnite = convertUnit(units)
         viewModelScope.launch {
             try {
-                mutableHourlyWeather.value = ResponseState.Loading // 🔹 Force UI to detect change
-
-                val response = repo.fetchHourlyWeather(lat, lon, apiKey,tempUnite)
+                mutableHourlyWeather.value = ResponseState.Loading
+                val response = repo.fetchHourlyWeather(lat, lon, apiKey,tempUnite,lang)
                 response.catch { ex ->
                     Log.e("TAG", "getHourlyWeather: Error fetching weather -> ${ex.message}")
                     mutableHourlyWeather.value = ResponseState.Error(ex)

@@ -1,7 +1,9 @@
 package com.example.skypeek.composablescreens
 
+import android.content.Context
 import android.location.Location
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -27,14 +29,16 @@ import com.example.skypeek.composablescreens.settings.SettingFactory
 import com.example.skypeek.composablescreens.settings.SettingScreen
 import com.example.skypeek.composablescreens.settings.SettingsViewModel
 import com.example.skypeek.composablescreens.splash.SplashScreen
-import com.example.skypeek.composablescreens.utiles.LocalNavController
-import com.example.skypeek.composablescreens.utiles.helpers.LocationHelper
+import com.example.skypeek.utiles.LocalNavController
+import com.example.skypeek.utiles.helpers.LocationHelper
 import com.example.skypeek.data.local.WeatherDataBase
 import com.example.skypeek.data.local.WeatherLocalDataSourceImpl
+import com.example.skypeek.data.models.LocationPOJO
 import com.example.skypeek.data.remote.WeatherApiService
 import com.example.skypeek.data.remote.WeatherRemoteDataSource
 import com.example.skypeek.data.repository.WeatherRepositoryImpl
 import com.google.android.libraries.places.api.Places
+import com.google.gson.Gson
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -47,6 +51,8 @@ fun SetupNavHost(
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
+    val sharedPref = context.getSharedPreferences("myPref", Context.MODE_PRIVATE)
+    val skipSplash = sharedPref.getBoolean("SkipSplash", false)
     val remoteDataSource = WeatherRemoteDataSource(apiService)
     val localDataSource =
         WeatherLocalDataSourceImpl(WeatherDataBase.getInstance(LocalContext.current).dao())
@@ -70,9 +76,10 @@ fun SetupNavHost(
     )
     NavHost(
         navController = navController,
-        startDestination = ScreensRoute.SplashScreen.route
+        startDestination = if (skipSplash) ScreensRoute.HomeScreen.route else ScreensRoute.SplashScreen.route
     ) {
         composable(ScreensRoute.SplashScreen.route) {
+            sharedPref.edit().putBoolean("SkipSplash", false).apply() // Reset after first launch
             SplashScreen(isNAV) {
                 navController.navigate(ScreensRoute.HomeScreen.route) {
                     popUpTo(ScreensRoute.SplashScreen.route) { inclusive = true }
@@ -89,14 +96,25 @@ fun SetupNavHost(
         }
         composable(ScreensRoute.FavScreen.route) {
             FavScreen(favViewModel, isFAB,isNAV, goToFavDetailsScreen = { locationPOJO ->
-                navController.navigate("favDetails/${locationPOJO.lat}/${locationPOJO.long}")
+                val gson = Gson()
+                val jsonString = gson.toJson(locationPOJO)
+                navController.navigate("favDetails/$jsonString")
             })
         }
 
-        composable("favDetails/{lat}/{long}") { backStackEntry ->
-            val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull() ?: 0.0
-            val long = backStackEntry.arguments?.getString("long")?.toDoubleOrNull() ?: 0.0
-            FavDetailsScreen(lat, long, homeViewModel, isFAB,isNAV)
+        composable("favDetails/{data}") { backStackEntry ->
+            val jsonString = backStackEntry.arguments?.getString("data")
+            val location = try {
+                Gson().fromJson(jsonString, LocationPOJO::class.java)
+            } catch (e: Exception) {
+                Log.e("TAG", "Error parsing JSON: $e")
+                null
+            }
+            if (location != null) {
+                FavDetailsScreen(location, homeViewModel, isFAB, isNAV)
+            } else {
+                Log.e("TAG", "Location data is null")
+            }
         }
 
         composable(

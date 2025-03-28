@@ -35,9 +35,9 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.skypeek.R
-import com.example.skypeek.composablescreens.utiles.enums.Temperature
-import com.example.skypeek.composablescreens.utiles.getFromSharedPrefrence
-import com.example.skypeek.composablescreens.utiles.helpers.setUnitSymbol
+import com.example.skypeek.utiles.enums.Temperature
+import com.example.skypeek.utiles.getFromSharedPrefrence
+import com.example.skypeek.utiles.helpers.setUnitSymbol
 import com.example.skypeek.data.models.WeatherData
 import com.example.skypeek.data.models.WeatherResponse
 import com.example.skypeek.ui.theme.black
@@ -45,6 +45,8 @@ import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.gray
 import com.example.skypeek.ui.theme.white
 import com.example.skypeek.ui.theme.yellow
+import com.example.skypeek.utiles.helpers.formatNumberBasedOnLanguage
+import com.example.skypeek.utiles.helpers.formatTemperatureUnitBasedOnLanguage
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -98,6 +100,7 @@ fun WeatherForecastScreen(weather: WeatherResponse) {
 @Composable
 fun WeatherItem(weather: WeatherData,units:String) {
     val tempUnit = setUnitSymbol(units)
+    val context = LocalContext.current
     val hour = weather.dt_txt.split(" ")[1].split(":")[0].toInt() // Extract hour from dt_txt
     val isDayTime = hour in 0..12 // Consider 6 AM to 6 PM as day time
 
@@ -127,13 +130,13 @@ fun WeatherItem(weather: WeatherData,units:String) {
         ) {
             Column {
                 Text(
-                    text = getMonthAndDay(weather.dt_txt),
+                    text = formatNumberBasedOnLanguage(context,getMonthAndDay(weather.dt_txt)),
                     color = black,
                     fontSize = 18.sp
                 )
                 Spacer(modifier = Modifier.width(2.dp))
                 Text(
-                    text = dayName.substring(0..2),
+                    text = dayName,
                     color = black,
                     fontSize = 18.sp
                 )
@@ -147,10 +150,14 @@ fun WeatherItem(weather: WeatherData,units:String) {
                     .height(50.dp)
             )
             Text(
-                text = "${mainWeather.temp_max.toInt()} $tempUnit / ${mainWeather.temp_min.toInt()} $tempUnit",
+                text = formatNumberBasedOnLanguage(context, mainWeather.temp_max.toInt()) +
+                        formatTemperatureUnitBasedOnLanguage(tempUnit) +
+                        "/" +
+                        formatNumberBasedOnLanguage(context, mainWeather.temp_min.toInt()) +
+                        formatTemperatureUnitBasedOnLanguage(tempUnit) ,
                 color = black
             )
-            Text(text = weather.weather[0].main, color = black)
+            Text(text = weather.weather[0].description, color = black)
         }
         HorizontalDivider(
             color = gray,

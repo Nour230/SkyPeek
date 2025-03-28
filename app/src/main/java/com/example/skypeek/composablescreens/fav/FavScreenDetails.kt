@@ -51,58 +51,64 @@ import com.example.skypeek.composablescreens.home.WeatherForecastScreen
 import com.example.skypeek.composablescreens.home.WeatherScreen
 import com.example.skypeek.composablescreens.home.getNightWeatherLottie
 import com.example.skypeek.composablescreens.home.getWeatherLottie
-import com.example.skypeek.composablescreens.utiles.getFromSharedPrefrence
-import com.example.skypeek.composablescreens.utiles.helpers.setUnitSymbol
-import com.example.skypeek.composablescreens.utiles.helpers.setWindSpeedSymbol
+import com.example.skypeek.utiles.getFromSharedPrefrence
+import com.example.skypeek.utiles.helpers.setUnitSymbol
+import com.example.skypeek.utiles.helpers.setWindSpeedSymbol
 import com.example.skypeek.data.models.CurrentWeather
+import com.example.skypeek.data.models.LocationPOJO
 import com.example.skypeek.data.models.ResponseState
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.gray
+import com.example.skypeek.utiles.SharedPreference
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.Locale
+import android.content.Context
+import com.example.skypeek.utiles.helpers.formatNumberBasedOnLanguage
+import com.example.skypeek.utiles.helpers.formatTemperatureUnitBasedOnLanguage
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun FavDetailsScreen(
-    lat: Double,
-    long: Double,
+    data : LocationPOJO,
     viewModel: HomeViewModel,
     isFAB: MutableState<Boolean>,
     isNAV: MutableState<Boolean>
 ) {
+    Log.i("TAG", "FavDetailsScreen: $data ")
     isFAB.value = false
     isNAV.value = false
     val locationState = remember { mutableStateOf<Location?>(null) }
     locationState.value = Location("").apply {
-        latitude = lat
-        longitude = long
+        latitude = data.lat
+        longitude = data.long
     }
     val context = LocalContext.current
     val currentWeather by viewModel.weather.collectAsStateWithLifecycle()
     val currentHourlyWeather by viewModel.hourlyWeather.collectAsStateWithLifecycle()
 
-
-    LaunchedEffect(locationState.value) {
+    LaunchedEffect(Unit) {
         locationState.value?.let { location ->
             viewModel.getWeather(
                 location.latitude,
                 location.longitude,
                 BuildConfig.apiKeySafe,
-                getFromSharedPrefrence(context, "temperature") ?: "Celsius"
+                getFromSharedPrefrence(context, "temperature") ?: "Celsius",
+                SharedPreference.getLanguage(context,"language")
             )
         }
     }
 
-
-    LaunchedEffect(locationState.value) {
+    LaunchedEffect(Unit) {
         locationState.value?.let { location ->
             viewModel.getHourlyWeather(
                 location.latitude,
                 location.longitude,
                 BuildConfig.apiKeySafe,
-                getFromSharedPrefrence(context, "temperature") ?: "Celsius"
+                getFromSharedPrefrence(context, "temperature") ?: "Celsius",
+                SharedPreference.getLanguage(context,"language")
             )
         }
     }
@@ -119,60 +125,42 @@ fun FavDetailsScreen(
             )
     ) {
         LazyColumn {
-
-            // Current Weather Section
             item {
                 when (currentWeather) {
                     is ResponseState.Error -> {
-                        Text(
-                            text = stringResource(
-                                R.string.error,
-                                (currentWeather as ResponseState.Error).message
-                            ),
-                            color = Color.White
-                        )
+                        WeatherFavDetailsScreen(data.currentWeather)
+                        Log.e("TAG", "FavDetailsScreen: offline")
+                        Log.e("TAG", "FavDetailsScreen: ${currentWeather as ResponseState.Error}")
                     }
-
                     is ResponseState.Loading -> {
                         com.example.skypeek.composablescreens.home.LoadingIndicatore()
                     }
-
                     is ResponseState.Success -> {
                         WeatherFavDetailsScreen((currentWeather as ResponseState.Success).data)
                     }
-
                     else -> {
                         Log.i("TAG", "HomeScreen: Unexpected state -> $currentWeather")
                     }
                 }
             }
 
-            // Spacer to separate sections
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // Hourly Weather Section
             item {
                 when (currentHourlyWeather) {
                     is ResponseState.Error -> {
-                        Text(
-                            text = stringResource(
-                                R.string.error,
-                                (currentHourlyWeather as ResponseState.Error).message
-                            ),
-                            color = Color.White
-                        )
+                        Weather(data.forecast)
+                        WeatherForecastScreen(data.forecast)
+                        Log.i("TAG", "FavDetailsScreen: offline ")
+                        Log.i("TAG", "FavDetailsScreen: ${currentHourlyWeather as ResponseState.Error}")
                     }
-
                     is ResponseState.Loading -> {
                         com.example.skypeek.composablescreens.home.LoadingIndicatore()
                     }
-
                     is ResponseState.SuccessForecast -> {
                         Weather((currentHourlyWeather as ResponseState.SuccessForecast).data)
                         WeatherForecastScreen((currentHourlyWeather as ResponseState.SuccessForecast).data)
-
                     }
-
                     else -> {
                         Log.i(
                             "TAG",
@@ -183,23 +171,17 @@ fun FavDetailsScreen(
             }
         }
     }
-
-
 }
-
-
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WeatherFavDetailsScreen(currentweather: CurrentWeather) {
+    val context = LocalContext.current
     val city = currentweather.name
     val mainWeather = currentweather.main
 
-    // Get the city's timezone offset (in seconds) from OpenWeatherMap API
     val cityOffsetSeconds = currentweather.timezone
     val cityZoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofTotalSeconds(cityOffsetSeconds))
-
-    // Convert Unix timestamp to local time of the city
     val dateTimeInCity = Instant.ofEpochSecond(currentweather.dt.toLong()).atZone(cityZoneId)
 
     val isAM = dateTimeInCity.hour < 12
@@ -212,9 +194,7 @@ fun WeatherFavDetailsScreen(currentweather: CurrentWeather) {
         )
     )
 
-    // Format the date and time based on the city's timezone
     val formattedDate = dateTimeInCity.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"))
-
     val weather = currentweather.weather
 
     Box(
@@ -227,30 +207,27 @@ fun WeatherFavDetailsScreen(currentweather: CurrentWeather) {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Top Bar
             TopBar(location = city)
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Weather Icon and Temperature
             WeatherFavDetailsMainInfo(
                 temperature = mainWeather.temp.toInt(),
                 desc = weather.firstOrNull()?.description ?: "N/A",
                 cloud = currentweather.clouds.all.toString(),
                 composition = composition,
-                units = getFromSharedPrefrence(LocalContext.current, "temperature") ?: "Celsius"
+                units = getFromSharedPrefrence(context, "temperature") ?: "Celsius"
             )
 
             Spacer(modifier = Modifier.height(22.dp))
 
-            // Additional Weather Details
             WeatherFavDetails(
                 realFeel = mainWeather.feels_like.toInt(),
                 humidity = mainWeather.humidity,
                 windSpeed = currentweather.wind.speed.toString(),
                 pressure = mainWeather.pressure.toString(),
-                date = formattedDate, // Now shows correct city time
-                units = getFromSharedPrefrence(LocalContext.current, "windspeed") ?: "m/s",
+                date = formatNumberBasedOnLanguage(context,formattedDate),
+                units = getFromSharedPrefrence(context, "windspeed") ?: "m/s",
                 max = mainWeather.temp_max.toInt().toString(),
                 min = mainWeather.temp_min.toInt().toString()
             )
@@ -258,13 +235,18 @@ fun WeatherFavDetailsScreen(currentweather: CurrentWeather) {
     }
 }
 
-
 @Composable
 fun WeatherFavDetailsMainInfo(
-    temperature: Int, composition:
-    LottieComposition?, desc: String, cloud: String, units: String
+    temperature: Int,
+    composition: LottieComposition?,
+    desc: String,
+    cloud: String,
+    units: String
 ) {
-    val tempUnit = setUnitSymbol(units)
+    val context = LocalContext.current
+    val tempUnit = formatTemperatureUnitBasedOnLanguage(setUnitSymbol(units))
+    val formattedTemp = formatNumberBasedOnLanguage(context, temperature)
+    val formattedCloud = formatNumberBasedOnLanguage(context, cloud)
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         LottieAnimation(
@@ -276,7 +258,7 @@ fun WeatherFavDetailsMainInfo(
                 .height(200.dp)
         )
         Text(
-            text = "$temperature $tempUnit",
+            text = "$formattedTemp $tempUnit",
             color = Color.White,
             fontSize = 64.sp,
             fontWeight = FontWeight.Bold
@@ -288,7 +270,7 @@ fun WeatherFavDetailsMainInfo(
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "Cloud: $cloud%",
+            text = "${stringResource(R.string.cloud)}: $formattedCloud%",
             color = Color.White,
             fontSize = 16.sp
         )
@@ -306,7 +288,15 @@ fun WeatherFavDetails(
     max: String,
     min: String
 ) {
-    val windUnit = setWindSpeedSymbol(units)
+    val context = LocalContext.current
+    val windUnit = formatTemperatureUnitBasedOnLanguage(setWindSpeedSymbol(units))
+    val formattedRealFeel = formatNumberBasedOnLanguage(context, realFeel)
+    val formattedHumidity = formatNumberBasedOnLanguage(context, humidity)
+    val formattedWindSpeed = formatNumberBasedOnLanguage(context, windSpeed)
+    val formattedPressure = formatNumberBasedOnLanguage(context, pressure)
+    val formattedMax = formatNumberBasedOnLanguage(context, max)
+    val formattedMin = formatNumberBasedOnLanguage(context, min)
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = date,
@@ -323,7 +313,7 @@ fun WeatherFavDetails(
                 WeatherFavDetailItem(
                     icon = R.drawable.temperature,
                     label = stringResource(R.string.realfeel),
-                    value = "$realFeel°"
+                    value = "$formattedRealFeel°"
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(
@@ -335,7 +325,7 @@ fun WeatherFavDetails(
                 WeatherFavDetailItem(
                     icon = R.drawable.humidity,
                     label = stringResource(R.string.humidity),
-                    value = "$humidity%"
+                    value = "$formattedHumidity%"
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(
@@ -347,21 +337,20 @@ fun WeatherFavDetails(
                 WeatherFavDetailItem(
                     icon = R.drawable.max_temp,
                     label = stringResource(R.string.min_temp),
-                    value = "$min °"
+                    value = "$formattedMin °"
                 )
             }
-            // Vertical Divider
             Box(
                 modifier = Modifier
                     .width(1.dp)
-                    .height(160.dp) // Adjust height as needed
+                    .height(160.dp)
                     .background(Color.White.copy(alpha = 0.5f))
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 WeatherFavDetailItem(
                     icon = R.drawable.wind,
                     label = stringResource(R.string.wind),
-                    value = "$windSpeed $windUnit"
+                    value = "$formattedWindSpeed $windUnit"
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(
@@ -370,7 +359,11 @@ fun WeatherFavDetails(
                     color = Color.White.copy(alpha = 0.5f)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                WeatherFavDetailItem(icon = R.drawable.pressure, label = stringResource(R.string.pressure), value = pressure)
+                WeatherFavDetailItem(
+                    icon = R.drawable.pressure,
+                    label = stringResource(R.string.pressure),
+                    value = formattedPressure
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(
                     modifier = Modifier.width(180.dp),
@@ -378,12 +371,15 @@ fun WeatherFavDetails(
                     color = Color.White.copy(alpha = 0.5f)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                WeatherFavDetailItem(icon = R.drawable.max_temp, label = stringResource(R.string.max_temp), value = "$max °")
+                WeatherFavDetailItem(
+                    icon = R.drawable.max_temp,
+                    label = stringResource(R.string.max_temp),
+                    value = "$formattedMax °"
+                )
             }
         }
     }
 }
-
 
 @Composable
 fun WeatherFavDetailItem(icon: Int, label: String, value: String) {
@@ -402,3 +398,4 @@ fun WeatherFavDetailItem(icon: Int, label: String, value: String) {
         }
     }
 }
+

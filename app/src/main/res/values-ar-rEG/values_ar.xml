@@ -35,4 +35,20 @@
     <string name="translation_failed">فشل الترجمة</string>
     <string name="translation_error">خطأ في الترجمة: %1$s</string>
     <string name="there_is_no_favorites_yet"> لا يوجد مفضلات حتي الان </string>
+    <string name="temp_is">درجه الحراره</string>
+    <string name="units_of_temperature">وحدات درجه الحراره</string>
+    <string name="cloud">الغيوم:</string>
+    <string name="item_deleted_from_favorite">تم حذف العنصر من المفضلة</string>
+    <string name="no_planned_alerts_yet">لا توجد تنبيهات مخططة حتى الآن</string>
+    <string name="new_alarm">منبه جديد</string>
+    <string name="date">التاريخ</string>
+    <string name="select_date">اختر التاريخ</string>
+    <string name="select_time">اختر وقت البدء</string>
+    <string name="select_end_time">اختر وقت الانتهاء</string>
+    <string name="time">الوقت</string>
+    <string name="end_time">وقت الانتهاء</string>
+    <string name="save">حفظ</string>
+    <string name="cancel">إلغاء</string>
+    <string name="ok">موافق</string>
+    <string name="korean">اللغه الكوريه</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.example.skypeek.composablescreens.utiles.enums
+package com.example.skypeek.utiles.enums
 
 enum class Temperature {
     CELSIUS,

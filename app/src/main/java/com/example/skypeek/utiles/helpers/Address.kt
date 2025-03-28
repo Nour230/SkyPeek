@@ -1,16 +1,16 @@
-package com.example.skypeek.composablescreens.utiles.helpers
+package com.example.skypeek.utiles.helpers
 
+import android.content.Context
 import android.location.Geocoder
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.example.skypeek.data.models.LocationPOJO
 import java.util.Locale
 
-@Composable
- fun getAddressFromLocation(location: LocationPOJO): String {
-    val geocoder = Geocoder(LocalContext.current, Locale.getDefault())
+ fun getAddressFromLocation(lat:Double,lon:Double,context: Context): String {
+    val geocoder = Geocoder(context, Locale.getDefault())
     return try {
-        val addresses = geocoder.getFromLocation(location.lat, location.long, 1)
+        val addresses = geocoder.getFromLocation(lat,lon, 1)
         if (addresses != null && addresses.isNotEmpty()) {
             val address = addresses[0]
             address.getCountryName()

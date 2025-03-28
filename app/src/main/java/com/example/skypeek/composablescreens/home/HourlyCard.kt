@@ -24,12 +24,14 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.example.skypeek.composablescreens.utiles.enums.Temperature
-import com.example.skypeek.composablescreens.utiles.getFromSharedPrefrence
-import com.example.skypeek.composablescreens.utiles.helpers.setUnitSymbol
+import com.example.skypeek.utiles.enums.Temperature
+import com.example.skypeek.utiles.getFromSharedPrefrence
+import com.example.skypeek.utiles.helpers.setUnitSymbol
 import com.example.skypeek.data.models.WeatherData
 import com.example.skypeek.data.models.WeatherResponse
 import com.example.skypeek.ui.theme.black
+import com.example.skypeek.utiles.helpers.formatNumberBasedOnLanguage
+import com.example.skypeek.utiles.helpers.formatTemperatureUnitBasedOnLanguage
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -119,7 +121,8 @@ fun DailyWeatherItem(weather: WeatherData, units: String) {
                 color = black
             )
             Text(
-                text = "${mainWeather.temp.toInt()} $tempUnit",
+                text = formatNumberBasedOnLanguage(LocalContext.current,mainWeather.temp.toInt())
+                        + formatTemperatureUnitBasedOnLanguage(tempUnit),
                 color = black,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold

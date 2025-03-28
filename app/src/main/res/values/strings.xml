@@ -28,10 +28,26 @@
     <string name="language">Language</string>
     <string name="english">English</string>
     <string name="arabic">Arabic</string>
+    <string name="korean">Korean</string>
     <string name="units_of_wind_speed">Units of Wind Speed</string>
     <string name="miles_hour">Miles/Hour</string>
     <string name="meter_sec">Meter/Sec</string>
     <string name="translation_failed">Translation failed</string>
     <string name="translation_error">Translation error: %1$s</string>
     <string name="there_is_no_favorites_yet">There is no Favorites yet</string>
+    <string name="temp_is">Temp is:\n</string>
+    <string name="units_of_temperature">Units of Temperature</string>
+    <string name="cloud">Cloud:</string>
+    <string name="item_deleted_from_favorite">item deleted from favorite</string>
+    <string name="no_planned_alerts_yet">No planned Alerts yet</string>
+    <string name="new_alarm">New Alarm</string>
+    <string name="date">Date</string>
+    <string name="select_date">Select Date</string>
+    <string name="select_time">Select Start Time</string>
+    <string name="select_end_time">Select End Time</string>
+    <string name="time">Time</string>
+    <string name="end_time">End Time</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.example.skypeek.composablescreens.utiles
+package com.example.skypeek.utiles
 
 import android.util.Log
 import androidx.compose.runtime.staticCompositionLocalOf
