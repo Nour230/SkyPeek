@@ -28,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.example.skypeek.composablescreens.ScreensRoute
 import com.example.skypeek.composablescreens.SetupNavHost
+import com.example.skypeek.composablescreens.alert.createNotificationChannel
 import com.example.skypeek.utiles.LocalNavController
 import com.example.skypeek.utiles.enums.NavigationBarItems
 import com.example.skypeek.utiles.helpers.LocationHelper
@@ -81,9 +83,12 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Initialize Places API
+        createNotificationChannel(this)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+        }        // Initialize Places API
         if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, "")
+            Places.initialize(applicationContext, "AIzaSyCaj10hgcwGaosoYRyv79ppLviFJ9eMNmM")
         }
         enableEdgeToEdge()
 
@@ -101,6 +106,20 @@ class MainActivity : ComponentActivity() {
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
         setContent {
+
+            val navController = rememberNavController()
+
+            val deepLinkUri = intent?.data?.toString()
+
+            LaunchedEffect(deepLinkUri) {
+                deepLinkUri?.let { uri ->
+                    if (uri.startsWith("E:\\ITI material\\android using kotlin\\SkyPeek\\app\\src\\main\\java\\com\\example\\skypeek\\composablescreens\\favDetails")) {
+                        val jsonString = uri.substringAfter("favDetails/")
+                        navController.navigate("favDetails/$jsonString")
+                    }
+                }
+            }
+
             isFAB = remember { mutableStateOf(false) }
             isNAV = remember { mutableStateOf(false) }
             showDetails = remember { mutableStateOf(false) }

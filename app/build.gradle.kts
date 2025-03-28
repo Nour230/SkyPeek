@@ -118,10 +118,12 @@ dependencies {
 // optional - Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:$room_version")
 
-//    //Room
-//    implementation(libs.androidx.room.runtime)
-//    // Kotlin Symbol Processing (KSP)
-//   // ksp(libs.symbol.processing.api)
-//    // optional - Kotlin Extensions and Coroutines support for Room
-//    implementation(libs.androidx.room.ktx)
+//for Kotlin + workManager
+    implementation("androidx.work:work-runtime-ktx:2.7.1")
+
+//notification
+    implementation ("androidx.core:core-ktx:1.12.0")
+    implementation ("androidx.appcompat:appcompat:1.6.1")
+    implementation ("com.google.android.material:material:1.9.0")
+    implementation ("androidx.core:core:1.12.0")
 }
