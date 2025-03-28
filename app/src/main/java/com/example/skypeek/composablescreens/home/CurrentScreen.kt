@@ -113,10 +113,7 @@ fun HomeScreen(
                 when (currentWeather) {
                     is ResponseState.Error -> {
                         Text(
-                            text = stringResource(
-                                R.string.error,
-                                (currentWeather as ResponseState.Error).message
-                            ),
+                            text = stringResource(R.string.error, (currentWeather as ResponseState.Error).message),
                             color = Color.White
                         )
                     }

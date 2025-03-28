@@ -55,6 +55,7 @@ import com.example.skypeek.composablescreens.utiles.getFromSharedPrefrence
 import com.example.skypeek.composablescreens.utiles.helpers.setUnitSymbol
 import com.example.skypeek.composablescreens.utiles.helpers.setWindSpeedSymbol
 import com.example.skypeek.data.models.CurrentWeather
+import com.example.skypeek.data.models.LocationPOJO
 import com.example.skypeek.data.models.ResponseState
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.gray
@@ -66,25 +67,25 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun FavDetailsScreen(
-    lat: Double,
-    long: Double,
+    data : LocationPOJO,
     viewModel: HomeViewModel,
     isFAB: MutableState<Boolean>,
     isNAV: MutableState<Boolean>
 ) {
+    Log.i("TAG", "FavDetailsScreen: $data ")
     isFAB.value = false
     isNAV.value = false
     val locationState = remember { mutableStateOf<Location?>(null) }
     locationState.value = Location("").apply {
-        latitude = lat
-        longitude = long
+        latitude = data.lat
+        longitude = data.long
     }
     val context = LocalContext.current
     val currentWeather by viewModel.weather.collectAsStateWithLifecycle()
     val currentHourlyWeather by viewModel.hourlyWeather.collectAsStateWithLifecycle()
 
 
-    LaunchedEffect(locationState.value) {
+    LaunchedEffect(Unit) {
         locationState.value?.let { location ->
             viewModel.getWeather(
                 location.latitude,
@@ -95,8 +96,7 @@ fun FavDetailsScreen(
         }
     }
 
-
-    LaunchedEffect(locationState.value) {
+    LaunchedEffect(Unit) {
         locationState.value?.let { location ->
             viewModel.getHourlyWeather(
                 location.latitude,
@@ -119,18 +119,13 @@ fun FavDetailsScreen(
             )
     ) {
         LazyColumn {
-
             // Current Weather Section
             item {
                 when (currentWeather) {
                     is ResponseState.Error -> {
-                        Text(
-                            text = stringResource(
-                                R.string.error,
-                                (currentWeather as ResponseState.Error).message
-                            ),
-                            color = Color.White
-                        )
+                        WeatherFavDetailsScreen(data.currentWeather)
+                        Log.e("TAG", "FavDetailsScreen: offline")
+                        Log.e("TAG", "FavDetailsScreen: ${currentWeather as ResponseState.Error}")
                     }
 
                     is ResponseState.Loading -> {
@@ -154,13 +149,10 @@ fun FavDetailsScreen(
             item {
                 when (currentHourlyWeather) {
                     is ResponseState.Error -> {
-                        Text(
-                            text = stringResource(
-                                R.string.error,
-                                (currentHourlyWeather as ResponseState.Error).message
-                            ),
-                            color = Color.White
-                        )
+                        Weather(data.forecast)
+                        WeatherForecastScreen(data.forecast)
+                        Log.i("TAG", "FavDetailsScreen: offline ")
+                        Log.i("TAG", "FavDetailsScreen: ${currentHourlyWeather as ResponseState.Error}")
                     }
 
                     is ResponseState.Loading -> {
