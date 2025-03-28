@@ -27,14 +27,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.skypeek.R
-import com.example.skypeek.composablescreens.utiles.deleteSharedPrefrence
-import com.example.skypeek.composablescreens.utiles.enums.Temperature
-import com.example.skypeek.composablescreens.utiles.enums.WindSpeed
-import com.example.skypeek.composablescreens.utiles.helpers.LocationHelper
-import com.example.skypeek.composablescreens.utiles.saveToSharedPrefrence
+import com.example.skypeek.utiles.deleteSharedPrefrence
+import com.example.skypeek.utiles.enums.Temperature
+import com.example.skypeek.utiles.enums.WindSpeed
+import com.example.skypeek.utiles.helpers.LocationHelper
+import com.example.skypeek.utiles.saveToSharedPrefrence
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.gray
 import com.example.skypeek.ui.theme.secbackgroundColor
+import com.example.skypeek.utiles.helpers.changeLanguage
 
 @Composable
 fun SettingScreen(
@@ -97,7 +98,7 @@ fun SettingScreen(
             )
         }
 
-        SettingsCard(title = "Units of Temperature") {
+        SettingsCard(title = stringResource(R.string.units_of_temperature)) {
             RadioOption(
                 text = stringResource(R.string.celsius),
                 isSelected = viewModel.selectedTemperature.value.equals(
@@ -137,12 +138,14 @@ fun SettingScreen(
             RadioOption(
                 text = stringResource(R.string.english),
                 isSelected = viewModel.selectedLanguage.value.equals("english", ignoreCase = true),
-                onSelected = { viewModel.setLanguage("english") }
+                onSelected = { viewModel.setLanguage("english")
+                changeLanguage(context,"en","language")}
             )
             RadioOption(
                 text = stringResource(R.string.arabic),
                 isSelected = viewModel.selectedLanguage.value.equals("arabic", ignoreCase = true),
-                onSelected = { viewModel.setLanguage("arabic") }
+                onSelected = { viewModel.setLanguage("arabic")
+                changeLanguage(context,"ar","language")}
             )
         }
 

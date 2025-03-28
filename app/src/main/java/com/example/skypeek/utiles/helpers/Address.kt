@@ -1,4 +1,4 @@
-package com.example.skypeek.composablescreens.utiles.helpers
+package com.example.skypeek.utiles.helpers
 
 import android.content.Context
 import android.location.Geocoder

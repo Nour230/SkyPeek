@@ -1,11 +1,11 @@
-package com.example.skypeek.composablescreens.utiles.helpers
+package com.example.skypeek.utiles.helpers.internet
 
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 
-private fun checkForInternet(context: Context): Boolean {
+fun checkForInternet(context: Context): Boolean {
     val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

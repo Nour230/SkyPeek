@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.skypeek.composablescreens.utiles.helpers.convertUnit
+import com.example.skypeek.utiles.helpers.convertUnit
 import com.example.skypeek.data.models.ResponseState
 import com.example.skypeek.data.repository.WeatherRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,12 +25,12 @@ class HomeViewModel (private val repo:WeatherRepository):ViewModel(){
     val error  = mutableError.asSharedFlow()
 
 
-    fun getWeather(lat: Double, lon: Double, apiKey: String, units: String) {
+    fun getWeather(lat: Double, lon: Double, apiKey: String, units: String, lang:String) {
         val tempUnit = convertUnit(units)
         viewModelScope.launch {
             try {
                 mutableWeather.value = ResponseState.Loading
-                repo.fetchWeather(lat, lon, apiKey, tempUnit)
+                repo.fetchWeather(lat, lon, apiKey, tempUnit,lang)
                     .collect { response ->
                         mutableWeather.value = ResponseState.Success(response)
                     }
@@ -44,12 +44,12 @@ class HomeViewModel (private val repo:WeatherRepository):ViewModel(){
 
 
 
-    fun getHourlyWeather(lat: Double, lon: Double, apiKey: String,units:String) {
+    fun getHourlyWeather(lat: Double, lon: Double, apiKey: String,units:String, lang:String) {
         val tempUnite = convertUnit(units)
         viewModelScope.launch {
             try {
                 mutableHourlyWeather.value = ResponseState.Loading
-                val response = repo.fetchHourlyWeather(lat, lon, apiKey,tempUnite)
+                val response = repo.fetchHourlyWeather(lat, lon, apiKey,tempUnite,lang)
                 response.catch { ex ->
                     Log.e("TAG", "getHourlyWeather: Error fetching weather -> ${ex.message}")
                     mutableHourlyWeather.value = ResponseState.Error(ex)

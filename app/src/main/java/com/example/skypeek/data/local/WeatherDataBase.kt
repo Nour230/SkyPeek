@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.skypeek.composablescreens.utiles.Converters
+import com.example.skypeek.utiles.Converters
 import com.example.skypeek.data.models.LocationPOJO
 @TypeConverters(Converters::class)
 @Database(entities = [LocationPOJO::class], version = 4, exportSchema = false)

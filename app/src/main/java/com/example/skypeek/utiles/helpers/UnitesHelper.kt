@@ -1,7 +1,7 @@
-package com.example.skypeek.composablescreens.utiles.helpers
+package com.example.skypeek.utiles.helpers
 
-import com.example.skypeek.composablescreens.utiles.enums.Temperature
-import com.example.skypeek.composablescreens.utiles.enums.WindSpeed
+import com.example.skypeek.utiles.enums.Temperature
+import com.example.skypeek.utiles.enums.WindSpeed
 
 fun mapTemperatureUnit(temperature: String): String {
     return when(temperature){

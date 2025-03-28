@@ -7,11 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.skypeek.BuildConfig
-import com.example.skypeek.composablescreens.utiles.getFromSharedPrefrence
-import com.example.skypeek.composablescreens.utiles.helpers.getAddressFromLocation
+import com.example.skypeek.utiles.getFromSharedPrefrence
+import com.example.skypeek.utiles.helpers.getAddressFromLocation
 import com.example.skypeek.data.models.CurrentWeather
 import com.example.skypeek.data.models.LocationPOJO
 import com.example.skypeek.data.repository.WeatherRepository
+import com.example.skypeek.utiles.SharedPreference
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
@@ -86,10 +87,14 @@ class MapViewModel(private val placesClient: PlacesClient,val repo: WeatherRepos
      fun insertLocation(lat: Double, lon: Double, context: Context) {
         viewModelScope.launch {
         val currentWeather = repo.fetchWeather(lat, lon, BuildConfig.apiKeySafe,
-            getFromSharedPrefrence(context, "temperature") ?: "Celsius").first()
+            getFromSharedPrefrence(context, "temperature") ?: "Celsius",
+            SharedPreference.getLanguage(context,"language")
+        ).first()
         Log.d("TAG", "Inserting location: Lat=$lat, Lon=$lon")
         val forecast = repo.fetchHourlyWeather(lat, lon, BuildConfig.apiKeySafe,
-            getFromSharedPrefrence(context, "temperature") ?: "Celsius").first()
+            getFromSharedPrefrence(context, "temperature") ?: "Celsius",
+            SharedPreference.getLanguage(context,"language")
+        ).first()
             val address = getAddressFromLocation(lat, lon, context)
         val location = LocationPOJO(lat = lat, long = lon, currentWeather = currentWeather, forecast = forecast, city = address)
 

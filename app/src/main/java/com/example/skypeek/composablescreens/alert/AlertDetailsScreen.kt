@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -75,9 +76,12 @@ fun AlertDetailsScreen(
     val endTimePickerState = rememberTimePickerState(is24Hour = false)
 
     // Selected values
-    val selectedDate = remember { mutableStateOf("Select Date") }
-    val selectedStartTime = remember { mutableStateOf("Select Time") }
-    val selectedEndtTime = remember { mutableStateOf("Select Time") }
+    val selectedDateString = stringResource(R.string.select_date)
+    val selectedTimeString = stringResource(R.string.select_time)
+    val selectedTimeEndString = stringResource(R.string.select_end_time)
+    val selectedDate = remember { mutableStateOf(selectedDateString) }
+    val selectedStartTime = remember { mutableStateOf(selectedTimeString) }
+    val selectedEndtTime = remember { mutableStateOf(selectedTimeEndString) }
 
 
     Box(
@@ -104,7 +108,7 @@ fun AlertDetailsScreen(
             ) {
                 // Header
                 Text(
-                    text = "New Alarm",
+                    text = stringResource(R.string.new_alarm),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = secBlue
@@ -145,7 +149,7 @@ fun AlertDetailsScreen(
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
-                                    text = "Date",
+                                    text = stringResource(R.string.date),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
@@ -155,7 +159,7 @@ fun AlertDetailsScreen(
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     fontWeight = FontWeight.Medium
                                 ),
-                                color = if (selectedDate.value == "Select Date") {
+                                color = if (selectedDate.value == stringResource(R.string.select_date)) {
                                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                 } else {
                                     MaterialTheme.colorScheme.onSurface
@@ -191,7 +195,7 @@ fun AlertDetailsScreen(
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
-                                    text = "Time",
+                                    text = stringResource(R.string.time),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
@@ -201,7 +205,7 @@ fun AlertDetailsScreen(
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     fontWeight = FontWeight.Medium
                                 ),
-                                color = if (selectedStartTime.value == "Select Time") {
+                                color = if (selectedStartTime.value == stringResource(R.string.select_time)) {
                                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                 } else {
                                     MaterialTheme.colorScheme.onSurface
@@ -237,7 +241,7 @@ fun AlertDetailsScreen(
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
-                                    text = "End Time",
+                                    text = stringResource(R.string.end_time),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
@@ -247,7 +251,7 @@ fun AlertDetailsScreen(
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     fontWeight = FontWeight.Medium
                                 ),
-                                color = if (selectedEndtTime.value == "Select End Time") {
+                                color = if (selectedEndtTime.value == stringResource(R.string.select_end_time)) {
                                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                 } else {
                                     MaterialTheme.colorScheme.onSurface
@@ -272,7 +276,7 @@ fun AlertDetailsScreen(
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
 
                     Button(
@@ -280,14 +284,16 @@ fun AlertDetailsScreen(
                             coroutineScope.launch { sheetState.hide(); onDismiss() }
                         },
                         modifier = Modifier.weight(1f),
-                        enabled = (selectedDate.value != "Select Date" && selectedStartTime.value != "Select Time " && selectedEndtTime.value != "Select End Time"),
+                        enabled = (selectedDate.value != stringResource(R.string.select_date)
+                                && selectedStartTime.value != stringResource(R.string.select_time)
+                                && selectedEndtTime.value != stringResource(R.string.select_end_time)),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = loyalBlue,
                             contentColor = white
                         )
                     ) {
-                        Text("Set Reminder")
+                        Text(stringResource(R.string.save))
                     }
                 }
             }
@@ -315,7 +321,7 @@ fun AlertDetailsScreen(
                             TextButton(
                                 onClick = { showDatePicker.value = false }
                             ) {
-                                Text("Cancel")
+                                Text(stringResource(R.string.cancel))
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             TextButton(
@@ -329,7 +335,7 @@ fun AlertDetailsScreen(
                                     }
                                 }
                             ) {
-                                Text("OK", fontWeight = FontWeight.Bold)
+                                Text(text = stringResource(R.string.ok), fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -360,7 +366,7 @@ fun AlertDetailsScreen(
                             TextButton(
                                 onClick = { showTimeStartPicker.value = false }
                             ) {
-                                Text("Cancel")
+                                Text(stringResource(R.string.cancel))
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             TextButton(
@@ -374,7 +380,7 @@ fun AlertDetailsScreen(
                                         "$displayHour:${minute.toString().padStart(2, '0')} $amPm"
                                 }
                             ) {
-                                Text("OK", fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.ok), fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -404,7 +410,7 @@ fun AlertDetailsScreen(
                             TextButton(
                                 onClick = { showTimeEndPicker.value = false }
                             ) {
-                                Text("Cancel")
+                                Text(stringResource(R.string.cancel))
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             TextButton(
@@ -418,13 +424,12 @@ fun AlertDetailsScreen(
                                         "$displayHour:${minute.toString().padStart(2, '0')} $amPm"
                                 }
                             ) {
-                                Text("OK", fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.ok), fontWeight = FontWeight.Bold)
                             }
                         }
                     }
                 }
             }
         }
-
     }
 }

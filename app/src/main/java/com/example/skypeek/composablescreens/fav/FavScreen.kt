@@ -44,11 +44,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieConstants
 import com.example.skypeek.R
-import com.example.skypeek.composablescreens.utiles.helpers.getAddressFromLocation
+import com.example.skypeek.utiles.helpers.getAddressFromLocation
 import com.example.skypeek.data.models.LocationPOJO
 import com.example.skypeek.data.models.ResponseStateFav
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.gray
+import com.example.skypeek.utiles.enums.Temperature
+import com.example.skypeek.utiles.getFromSharedPrefrence
+import com.example.skypeek.utiles.helpers.formatNumberBasedOnLanguage
+import com.example.skypeek.utiles.helpers.formatTemperatureUnitBasedOnLanguage
+import com.example.skypeek.utiles.helpers.setUnitSymbol
 import kotlinx.coroutines.launch
 
 @Composable
@@ -125,7 +130,7 @@ fun StartFavScreen(
                         iterations = LottieConstants.IterateForever
                     )
                     Text(
-                        text = "There is no Favorites yet",
+                        text = stringResource(R.string.there_is_no_favorites_yet),
                         fontSize = 24.sp
                     )
                 }
@@ -135,7 +140,8 @@ fun StartFavScreen(
                         data = fav[it],
                         viewModel = viewModel,
                         goToFavDetailsScreen = goToFavDetailsScreen,
-                        snack = snackbarHostState
+                        snack = snackbarHostState,
+                        unit = getFromSharedPrefrence(LocalContext.current, "temperature") ?: Temperature.CELSIUS.toString()
                     )
                 }
             }
@@ -156,10 +162,12 @@ fun FavItem(
     data: LocationPOJO,
     viewModel: FavViewModel,
     goToFavDetailsScreen: (LocationPOJO) -> Unit = {},
-    snack: SnackbarHostState
+    snack: SnackbarHostState,
+    unit :String
 ) {
+    val tempUnit = setUnitSymbol(unit)
     val city = getAddressFromLocation(data.lat, data.long, LocalContext.current)
-    val deleted by viewModel.isDelete.collectAsStateWithLifecycle("item deleted from favorite")
+    val deleted by viewModel.isDelete.collectAsStateWithLifecycle(stringResource(R.string.item_deleted_from_favorite))
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val isDeleted = remember { mutableStateOf(false) }
@@ -191,7 +199,9 @@ fun FavItem(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = "Temp is :${data.currentWeather.main.temp}",
+                        text = stringResource(R.string.temp_is)+":  "
+                                + formatNumberBasedOnLanguage(context,data.currentWeather.main.temp)+
+                                formatTemperatureUnitBasedOnLanguage(tempUnit),
                         fontSize = 18.sp,
                         modifier = Modifier.weight(1f)
                     )

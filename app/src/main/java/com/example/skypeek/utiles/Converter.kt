@@ -1,4 +1,4 @@
-package com.example.skypeek.composablescreens.utiles
+package com.example.skypeek.utiles
 
 import androidx.room.TypeConverter
 import com.example.skypeek.data.models.CurrentWeather
