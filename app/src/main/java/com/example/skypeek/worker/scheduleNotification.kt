@@ -1,17 +1,41 @@
 package com.example.skypeek.worker
 
-
 import android.content.Context
-import androidx.work.*
-import com.example.skypeek.data.models.LocationPOJO
-import com.google.gson.Gson
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.Calendar
 import java.util.concurrent.TimeUnit
+import androidx.core.content.edit
 
-fun scheduleNotification(context: Context, location: LocationPOJO, delayInMillis: Long) {
-    val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
-        .setInitialDelay(delayInMillis, TimeUnit.MILLISECONDS)
-        .setInputData(workDataOf("location" to Gson().toJson(location))) // Pass data
-        .build()
+fun scheduleNotification(calendar: Calendar, context: Context) {
+    val delay = calendar.timeInMillis - System.currentTimeMillis()
+    if (delay > 0) {
+        val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+            .addTag("persistent_notification")
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                    .setRequiresCharging(false)
+                    .setRequiresBatteryNotLow(false)
+                    .build()
+            )
+            .build()
 
-    WorkManager.getInstance(context).enqueue(workRequest)
+        WorkManager.getInstance(context.applicationContext)
+            .enqueueUniqueWork(
+                "notification_${calendar.timeInMillis}",
+                ExistingWorkPolicy.REPLACE,
+                workRequest
+            )
+
+        // Persist this schedule in SharedPreferences
+        context.getSharedPreferences("notifications", Context.MODE_PRIVATE)
+            .edit() {
+                putLong("next_notification", calendar.timeInMillis)
+            }
+    }
 }

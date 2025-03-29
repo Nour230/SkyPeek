@@ -47,25 +47,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.example.skypeek.composablescreens.ScreensRoute
 import com.example.skypeek.composablescreens.SetupNavHost
-import com.example.skypeek.composablescreens.alert.createNotificationChannel
-import com.example.skypeek.data.models.City
-import com.example.skypeek.data.models.Clouds
-import com.example.skypeek.data.models.Coord
-import com.example.skypeek.data.models.CurrentWeather
-import com.example.skypeek.data.models.LocationPOJO
-import com.example.skypeek.data.models.Main
-import com.example.skypeek.data.models.Sys
-import com.example.skypeek.data.models.Weather
-import com.example.skypeek.data.models.WeatherData
-import com.example.skypeek.data.models.WeatherResponse
-import com.example.skypeek.data.models.Wind
 import com.example.skypeek.utiles.LocalNavController
 import com.example.skypeek.utiles.enums.NavigationBarItems
 import com.example.skypeek.utiles.helpers.LocationHelper
 import com.example.skypeek.utiles.helpers.REQUEST_LOCATION_PERMISSION
 import com.example.skypeek.data.remote.RetrofitHelper.weatherApiService
 import com.example.skypeek.data.remote.WeatherApiService
-import com.example.skypeek.service.NotificationService
 import com.example.skypeek.ui.screenshelper.customShadow
 import com.example.skypeek.ui.theme.Purple40
 import com.example.skypeek.ui.theme.black
@@ -97,7 +84,6 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        createNotificationChannel(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
         }        // Initialize Places API
@@ -105,112 +91,7 @@ class MainActivity : ComponentActivity() {
             Places.initialize(applicationContext, "AIzaSyCaj10hgcwGaosoYRyv79ppLviFJ9eMNmM")
         }
 
-        val weatherResponse = WeatherResponse(
-            cod = "200",
-            message = 0,
-            cnt = 40,
-            list = listOf(
-                WeatherData(
-                    dt = 1712340000,
-                    main = Main(
-                        temp = 23.5,
-                        feels_like = 25.1,
-                        temp_min = 22.0,
-                        temp_max = 26.3,
-                        pressure = 1012,
-                        sea_level = 1015,
-                        grnd_level = 1010,
-                        humidity = 65,
-                        temp_kf = 1.2
-                    ),
-                    weather = listOf(
-                        Weather(
-                            id = 800,
-                            main = "Clear",
-                            description = "clear sky",
-                            icon = "01d"
-                        )
-                    ),
-                    clouds = Clouds(all = 0),
-                    wind = Wind(
-                        speed = 3.5,
-                        deg = 180,
-                        gust = 5.2
-                    ),
-                    visibility = 10000,
-                    pop = 0.0,
-                    sys = Sys(pod = "d"),
-                    dt_txt = "2024-04-05 12:00:00"
-                ),
-                // Add more WeatherData objects as needed
-            ),
-            city = City(
-                id = 2643743,
-                name = "London",
-                coord = Coord(
-                    lat = 51.5085,
-                    lon = -0.1257
-                ),
-                country = "GB",
-                population = 1000000,
-                timezone = 3600,
-                sunrise = 1712295000,
-                sunset = 1712343000
-            )
-        )
-
-
-
-        val currentWeather = CurrentWeather(
-            base = "stations",
-            clouds = CurrentWeather.Clouds(all = 20),
-            cod = 200,
-            coord = CurrentWeather.Coord(lat = 30.0444, lon = 31.2357),
-            dt = 1680000000,
-            id = 98765,
-            main = CurrentWeather.Main(
-                feels_like = 32.0,
-                grnd_level = 1000,
-                humidity = 55,
-                pressure = 1013,
-                sea_level = 1015,
-                temp = 30.0,
-                temp_max = 31.5,
-                temp_min = 28.0
-            ),
-            name = "Cairo",
-            sys = CurrentWeather.Sys(
-                country = "EG",
-                id = 1,
-                sunrise = 1680000000,
-                sunset = 1680043200,
-                type = 1
-            ),
-            timezone = 7200,
-            visibility = 10000,
-            weather = listOf(
-                CurrentWeather.Weather(
-                    description = "few clouds",
-                    icon = "02d",
-                    id = 801,
-                    main = "Clouds"
-                )
-            ),
-            wind = CurrentWeather.Wind(deg = 150, speed = 6.5)
-        )
-        val locationData = LocationPOJO(
-            lat = 30.0444,
-            long = 31.2357,
-            currentWeather = currentWeather,
-            forecast = weatherResponse,
-            city = "Cairo"
-        )
-
-        val serviceIntent = Intent(this, NotificationService::class.java).apply {
-            putExtra("location", Gson().toJson(locationData)) // Convert to JSON before sending
-        }
-
-        startService(serviceIntent)
+        //createNotificationChannel(this)
         enableEdgeToEdge()
 
         hideSystemUI()
@@ -415,7 +296,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun hideSystemUI() {
+     fun hideSystemUI() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.insetsController?.let {
                 it.hide(WindowInsets.Type.navigationBars()) // Hide only navigation bar

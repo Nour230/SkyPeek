@@ -15,7 +15,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.skypeek.composablescreens.alert.AlertDetailsScreen
 import com.example.skypeek.composablescreens.alert.AlertScreen
-import com.example.skypeek.composablescreens.alert.NotificationScreen
 import com.example.skypeek.composablescreens.fav.FavDetailsScreen
 import com.example.skypeek.composablescreens.fav.FavFactory
 import com.example.skypeek.composablescreens.fav.FavScreen
@@ -112,8 +111,8 @@ fun SetupNavHost(
                 null
             }
             if (location != null) {
-                NotificationScreen(location)
-               //FavDetailsScreen(location, homeViewModel, isFAB, isNAV)
+               // NotificationScreen()
+               FavDetailsScreen(location, homeViewModel, isFAB, isNAV)
             } else {
                 Log.e("TAG", "Location data is null")
             }

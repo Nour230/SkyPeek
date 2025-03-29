@@ -56,8 +56,10 @@ import com.example.skypeek.utiles.helpers.setWindSpeedSymbol
 import com.example.skypeek.data.models.CurrentWeather
 import com.example.skypeek.data.models.ResponseState
 import com.example.skypeek.utiles.SharedPreference
+import com.example.skypeek.utiles.deleteSharedPrefrence
 import com.example.skypeek.utiles.helpers.formatNumberBasedOnLanguage
 import com.example.skypeek.utiles.helpers.formatTemperatureUnitBasedOnLanguage
+import com.example.skypeek.utiles.saveToSharedPrefrence
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -102,7 +104,6 @@ fun HomeScreen(
             }
         }
     }
-
 
     LaunchedEffect(isConnected) {
         if (isConnected) {
@@ -205,6 +206,13 @@ fun WeatherScreen(currentweather: CurrentWeather) {
 
     // Convert Unix timestamp to local time of the city
     val dateTimeInCity = Instant.ofEpochSecond(currentweather.dt.toLong()).atZone(cityZoneId)
+
+    deleteSharedPrefrence(context, "cityLat")
+    deleteSharedPrefrence(context, "cityLong")
+    saveToSharedPrefrence(context, currentweather.coord.lat.toString(), "cityLat")
+    saveToSharedPrefrence(context, currentweather.coord.lon.toString(), "cityLong")
+    Log.i("TAG", "WeatherScreen:${currentweather.coord.lat} ")
+    Log.i("TAG", "WeatherScreen:${currentweather.coord.lon} ")
 
     val isAM = dateTimeInCity.hour < 12
     val composition by rememberLottieComposition(

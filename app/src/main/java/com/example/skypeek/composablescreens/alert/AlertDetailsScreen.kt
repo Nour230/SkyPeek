@@ -41,17 +41,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.skypeek.R
+import com.example.skypeek.services.NotificationService
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.secBlue
 import com.example.skypeek.ui.theme.white
+import com.example.skypeek.worker.scheduleNotification
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -64,7 +68,7 @@ fun AlertDetailsScreen(
 ) {
     isNAV.value = false
     isFAB.value = false
-
+    val context = LocalContext.current
     // State for dialogs
     val showDatePicker = remember { mutableStateOf(false) }
     val showTimeStartPicker = remember { mutableStateOf(false) }
@@ -267,6 +271,7 @@ fun AlertDetailsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+
                     Button(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f),
@@ -278,15 +283,46 @@ fun AlertDetailsScreen(
                     ) {
                         Text(stringResource(R.string.cancel))
                     }
-
                     Button(
                         onClick = {
-                            coroutineScope.launch { sheetState.hide(); onDismiss() }
+                            val calendar = Calendar.getInstance()
+
+                            // Set date if selected
+                            datePickerState.selectedDateMillis?.let {
+                                calendar.timeInMillis = it
+                            }
+
+                            // Parse and set time
+                            val startTime = selectedStartTime.value.split("[: ]".toRegex())
+                            if (startTime.size == 3) {
+                                var hour = startTime[0].toInt()
+                                val minute = startTime[1].toInt()
+                                val amPm = startTime[2]
+
+                                // Convert to 24-hour format
+                                hour = when {
+                                    amPm.equals("PM", true) && hour != 12 -> hour + 12
+                                    amPm.equals("AM", true) && hour == 12 -> 0
+                                    else -> hour
+                                }
+
+                                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                                calendar.set(Calendar.MINUTE, minute)
+                                calendar.set(Calendar.SECOND, 0)
+                                calendar.set(Calendar.MILLISECOND, 0)
+                            }
+
+                            // Schedule notification
+                            scheduleNotification(calendar, context)
+
+                            // Start the foreground service
+                            NotificationService.startService(context)
+
+                            coroutineScope.launch { onDismiss() }
                         },
                         modifier = Modifier.weight(1f),
                         enabled = (selectedDate.value != stringResource(R.string.select_date)
-                                && selectedStartTime.value != stringResource(R.string.select_time)
-                                && selectedEndtTime.value != stringResource(R.string.select_end_time)),
+                                && selectedStartTime.value != stringResource(R.string.select_time)),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = loyalBlue,
@@ -305,7 +341,7 @@ fun AlertDetailsScreen(
             Dialog(onDismissRequest = { showDatePicker.value = false }) {
                 Surface(
                     modifier = Modifier
-                        .width(340.dp)
+                        .width(440.dp)
                         .clip(RoundedCornerShape(28.dp)),
                     color = MaterialTheme.colorScheme.surface
                 ) {
@@ -335,7 +371,10 @@ fun AlertDetailsScreen(
                                     }
                                 }
                             ) {
-                                Text(text = stringResource(R.string.ok), fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = stringResource(R.string.ok),
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     }
