@@ -112,8 +112,8 @@ fun SetupNavHost(
                 null
             }
             if (location != null) {
-                //NotificationScreen(location)
-               FavDetailsScreen(location, homeViewModel, isFAB, isNAV)
+                NotificationScreen(location)
+               //FavDetailsScreen(location, homeViewModel, isFAB, isNAV)
             } else {
                 Log.e("TAG", "Location data is null")
             }

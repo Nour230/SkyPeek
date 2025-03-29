@@ -58,7 +58,7 @@ import com.google.gson.Gson
 }
 
 
-private fun showNotification(context: Context, locationPOJO: LocationPOJO) {
+ fun showNotification(context: Context, locationPOJO: LocationPOJO) {
     val channelId = "message_channel"
 
     val gson = Gson()
