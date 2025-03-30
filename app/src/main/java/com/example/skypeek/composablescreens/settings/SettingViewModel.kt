@@ -33,9 +33,7 @@ class SettingsViewModel(private val context: Context) : ViewModel() {
     // Temperature state
     private val _selectedTemperature = mutableStateOf(
         getFromSharedPrefrence(context, PREF_TEMPERATURE) ?: DEFAULT_TEMPERATURE
-    ).also {
-        Log.d(TAG, "Initial Temperature: ${it.value}")
-    }
+    )
     val selectedTemperature: State<String> = _selectedTemperature
 
     // Language state
@@ -47,33 +45,30 @@ class SettingsViewModel(private val context: Context) : ViewModel() {
     // Wind speed state
     private val _selectedWindSpeed = mutableStateOf(
         getFromSharedPrefrence(context, PREF_WIND_SPEED) ?: DEFAULT_WIND_SPEED
-    ).also {
-        Log.d(TAG, "Initial Wind Speed: ${it.value}")
-    }
+    )
     val selectedWindSpeed: State<String> = _selectedWindSpeed
 
     fun setLocation(value: String) {
         _selectedLocation.value = value
         saveToSharedPrefrence(context, value, PREF_LOCATION)
-        Log.d(TAG, "Saved Location: $value")
     }
 
     fun setTemperature(value: String) {
         _selectedTemperature.value = value
         saveToSharedPrefrence(context, value, PREF_TEMPERATURE)
-        Log.d(TAG, "Saved Temperature: $value")
     }
 
     fun setLanguage(value: String) {
-        _selectedLanguage.value = value
+        _selectedLanguage.value = value // ✅ Update UI state immediately
         saveToSharedPrefrence(context, value, PREF_LANGUAGE)
-        Log.d(TAG, "Saved Language: $value")
+        Log.d("SettingsViewModel", "Saved Language: $value")
     }
+
+
 
     fun setWindSpeed(value: String) {
         _selectedWindSpeed.value = value
         saveToSharedPrefrence(context, value, PREF_WIND_SPEED)
-        Log.d(TAG, "Saved Wind Speed: $value")
     }
 
 

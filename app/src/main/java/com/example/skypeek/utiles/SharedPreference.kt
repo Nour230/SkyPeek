@@ -6,16 +6,14 @@ import android.util.Log
 import androidx.core.content.edit
 
 fun saveToSharedPrefrence(context: Context, value: String, key: String) {
-    Log.d("TAG", "saveToSharedPrefrence: $value")
-    val sheredPref = context.getSharedPreferences("myPref", Context.MODE_PRIVATE)
-    sheredPref.edit() {
-        putString(key, value)
-    }
+   // Log.d("TAG", "saveToSharedPrefrence: $value")
+    val prefs: SharedPreferences = context.getSharedPreferences("myPref", Context.MODE_PRIVATE)
+    prefs.edit().putString(key, value).apply()
 }
 
 fun getFromSharedPrefrence(context: Context, key: String): String? {
-    val sharedPref = context.getSharedPreferences("myPref", Context.MODE_PRIVATE)
-    return sharedPref.getString(key, null)
+    val prefs: SharedPreferences = context.getSharedPreferences("myPref", Context.MODE_PRIVATE)
+    return prefs.getString(key, null) // ✅ Ensure default value is handled
 }
 
 fun deleteSharedPrefrence(context: Context,key: String) {

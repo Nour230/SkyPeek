@@ -51,4 +51,9 @@
     <string name="cancel">취소</string>
     <string name="ok">확인</string>
     <string name="korean">한국인</string>
+    <string name="time_alerts_channel_name">시간 알림</string>
+    <string name="time_alerts_channel_description">예약된 시간 알림을 위한 알림</string>
+    <string name="default_time_alert_title">시간 알림</string>
+    <string name="default_time_alert_message">예약된 시간이 되었습니다!</string>
+
 </resources>

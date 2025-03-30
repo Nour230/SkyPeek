@@ -51,4 +51,9 @@
     <string name="cancel">إلغاء</string>
     <string name="ok">موافق</string>
     <string name="korean">اللغه الكوريه</string>
+    <string name="time_alerts_channel_name">تنبيهات الوقت</string>
+    <string name="time_alerts_channel_description">إشعارات لتنبيهات الوقت المجدولة</string>
+    <string name="default_time_alert_title">تنبيه الوقت</string>
+    <string name="default_time_alert_message">لقد حان وقت التنبيه المجدول!</string>
+
 </resources>

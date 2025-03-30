@@ -24,7 +24,7 @@ fun setUnitSymbol(temperature: String): String {
 
 fun mapWindSpeedUnit(windSpeed: String): String {
     return when(windSpeed){
-        WindSpeed.MERE_SEC.toString() -> "metric"
+        WindSpeed.METER_SEC.toString() -> "metric"
         WindSpeed.MILES_HOUR.toString() -> "imperial"
         else -> "standard"
     }
@@ -32,7 +32,7 @@ fun mapWindSpeedUnit(windSpeed: String): String {
 
 fun setWindSpeedSymbol(windSpeed: String): String {
     return when(windSpeed){
-        WindSpeed.MERE_SEC.toString() -> "m/s"
+        WindSpeed.METER_SEC.toString() -> "m/s"
         WindSpeed.MILES_HOUR.toString() -> "mph"
         else -> "m/s"
     }
@@ -59,6 +59,17 @@ fun isTemperatureUnit(unit: String): Boolean {
  * Checks if the provided unit is a wind speed unit.
  */
 fun isWindSpeedUnit(unit: String): Boolean {
-    return unit == WindSpeed.MERE_SEC.toString() ||
+    return unit == WindSpeed.METER_SEC.toString() ||
             unit == WindSpeed.MILES_HOUR.toString()
+}
+
+
+
+fun mapLanguageCodeToName(code: String): String {
+    return when (code) {
+        "en" -> "english"
+        "ar" -> "arabic"
+        "kr" -> "korean"
+        else -> "english"
+    }
 }
