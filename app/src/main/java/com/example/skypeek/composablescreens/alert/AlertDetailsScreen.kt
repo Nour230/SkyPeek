@@ -135,7 +135,7 @@ fun AlertDetailsScreen(
                 modifier = Modifier
                     .padding(24.dp)
                     .fillMaxWidth()
-                    .fillMaxHeight(0.46f),
+                    .fillMaxHeight(0.34f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Header
@@ -252,52 +252,6 @@ fun AlertDetailsScreen(
                             )
                         }
                     }
-
-                    // Time picker card
-                    OutlinedCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showTimeEndPicker.value = true },
-                        border = BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.alarm),
-                                    contentDescription = "End Time",
-                                    tint = secBlue,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    text = stringResource(R.string.end_time),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
-                            }
-                            Text(
-                                text = selectedEndtTime.value,
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    fontWeight = FontWeight.Medium
-                                ),
-                                color = if (selectedEndtTime.value == stringResource(R.string.select_end_time)) {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface
-                                }
-                            )
-                        }
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -322,13 +276,13 @@ fun AlertDetailsScreen(
                         onClick = {
                             val calendar = Calendar.getInstance()
 
-                            // Set date if selected
+                            // Set the selected date if available
                             datePickerState.selectedDateMillis?.let {
                                 calendar.timeInMillis = it
                             }
 
-                            // Parse and set time
-                            val startTime = selectedStartTime.value.split("[: ]".toRegex())
+                            // Parse and set the selected time
+                            val startTime = selectedStartTime.value.split("[: ]".toRegex()) // "hh:mm a"
                             if (startTime.size == 3) {
                                 var hour = startTime[0].toInt()
                                 val minute = startTime[1].toInt()
@@ -346,21 +300,34 @@ fun AlertDetailsScreen(
                                 calendar.set(Calendar.SECOND, 0)
                                 calendar.set(Calendar.MILLISECOND, 0)
                             }
+
+                            // Format date as "yyyy-MM-dd"
+                            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                            val formattedDate = dateFormat.format(calendar.time)
+
+                            // Create the alarm object
                             val alarm = AlarmPojo(
-                                selectedStartTime.value, selectedDate.value
+                                selectedStartTime.value, // "hh:mm a"
+                                formattedDate           // "yyyy-MM-dd"
                             )
+
+                            // Insert the alarm into the database
                             viewModel.indertAlarm(alarm)
-                            // Schedule notification
-                            scheduleNotification(calendar, context)
+
+                            // Schedule the notification
+                            scheduleNotification(calendar, alarm, context)
 
                             // Start the foreground service
                             NotificationService.startService(context)
-                              // After saving, re-hide the navigation bar
+
+                            // Hide the system UI (if applicable)
                             (context as MainActivity).hideSystemUI()
 
+                            // Close the UI after saving
                             coroutineScope.launch { onDismiss() }
                         },
-                        modifier = Modifier.weight(1f),
+
+                                modifier = Modifier.weight(1f),
                         enabled = (selectedDate.value != stringResource(R.string.select_date)
                                 && selectedStartTime.value != stringResource(R.string.select_time)),
                         shape = RoundedCornerShape(12.dp),

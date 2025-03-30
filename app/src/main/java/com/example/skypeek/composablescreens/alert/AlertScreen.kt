@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -164,10 +165,10 @@ fun FavItem(
 ) {
     val time = item.time
     val timeNow = System.currentTimeMillis()
-
+    val context = LocalContext.current
     val now = millisToTime(timeNow)
-    if (now > time) {
-        viewModel.deleteAlarmRoom(item)
+    if (now >= time) {
+        viewModel.deleteAlarmRoom(item, context)
     }
 
     val isDeleted = remember { mutableStateOf(false) }
@@ -198,7 +199,7 @@ fun FavItem(
                 Button(
                     onClick = {
                         isDeleted.value = true
-                        viewModel.deleteAlarmRoom(item)
+                        viewModel.deleteAlarmRoom(item,context)
                     },
                     colors = ButtonDefaults.buttonColors(colorResource(R.color.darkBlue)),
                     shape = RoundedCornerShape(8.dp),

@@ -1,6 +1,7 @@
 package com.example.skypeek.worker
 
 import android.content.Context
+import android.util.Log
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -9,8 +10,11 @@ import androidx.work.WorkManager
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import androidx.core.content.edit
+import com.example.skypeek.data.models.AlarmPojo
 
-fun scheduleNotification(calendar: Calendar, context: Context) {
+fun scheduleNotification(calendar: Calendar, alarm: AlarmPojo, context: Context) {
+    Log.i("TAG", "scheduleNotification: ${calendar.timeInMillis}")
+
     val delay = calendar.timeInMillis - System.currentTimeMillis()
     if (delay > 0) {
         val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
@@ -25,17 +29,17 @@ fun scheduleNotification(calendar: Calendar, context: Context) {
             )
             .build()
 
-        WorkManager.getInstance(context.applicationContext)
-            .enqueueUniqueWork(
-                "notification_${calendar.timeInMillis}",
-                ExistingWorkPolicy.REPLACE,
-                workRequest
-            )
+        val workManager = WorkManager.getInstance(context.applicationContext)
+        val uniqueWorkName = "notification_${calendar.timeInMillis}"
 
-        // Persist this schedule in SharedPreferences
-        context.getSharedPreferences("notifications", Context.MODE_PRIVATE)
-            .edit() {
-                putLong("next_notification", calendar.timeInMillis)
-            }
+        workManager.enqueueUniqueWork(
+            uniqueWorkName,
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
+
+        // Store the scheduled time in SharedPreferences using a combination of time and date
+        val prefs = context.getSharedPreferences("notifications", Context.MODE_PRIVATE)
+        prefs.edit().putLong("${alarm.time}_${alarm.date}", calendar.timeInMillis).apply()
     }
 }

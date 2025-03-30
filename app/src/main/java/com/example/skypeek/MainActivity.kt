@@ -1,7 +1,6 @@
 package com.example.skypeek
 
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Build
@@ -15,23 +14,28 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,13 +48,10 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.example.skypeek.composablescreens.ScreensRoute
 import com.example.skypeek.composablescreens.SetupNavHost
-import com.example.skypeek.utiles.LocalNavController
-import com.example.skypeek.utiles.enums.NavigationBarItems
-import com.example.skypeek.utiles.helpers.LocationHelper
-import com.example.skypeek.utiles.helpers.REQUEST_LOCATION_PERMISSION
 import com.example.skypeek.data.remote.RetrofitHelper.weatherApiService
 import com.example.skypeek.data.remote.WeatherApiService
 import com.example.skypeek.ui.screenshelper.customShadow
@@ -59,15 +60,20 @@ import com.example.skypeek.ui.theme.black
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.secbackgroundColor
+import com.example.skypeek.utiles.LocalNavController
 import com.example.skypeek.utiles.SharedPreference
+import com.example.skypeek.utiles.enums.NavigationBarItems
 import com.example.skypeek.utiles.helpers.LocaleHelper
+import com.example.skypeek.utiles.helpers.LocationHelper
+import com.example.skypeek.utiles.helpers.REQUEST_LOCATION_PERMISSION
+import com.example.skypeek.utiles.helpers.internet.ConnectivityObserver
+import com.example.skypeek.utiles.helpers.internet.checkForInternet
 import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
 import com.exyte.animatednavbar.animation.indendshape.Height
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.libraries.places.api.Places
-import com.google.gson.Gson
 
 class MainActivity : ComponentActivity() {
     private lateinit var locationHelper: LocationHelper
@@ -77,13 +83,15 @@ class MainActivity : ComponentActivity() {
     private lateinit var showDetails: MutableState<Boolean>
 
     override fun attachBaseContext(newBase: Context?) {
-            val language = SharedPreference.getLanguage(newBase!!, "language")
-        super.attachBaseContext(LocaleHelper.setLocale(newBase,language))
+        val language = SharedPreference.getLanguage(newBase!!, "language")
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, language))
 
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val connectivityObserver = ConnectivityObserver(applicationContext)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
         }        // Initialize Places API
@@ -126,7 +134,14 @@ class MainActivity : ComponentActivity() {
             isFAB = remember { mutableStateOf(false) }
             isNAV = remember { mutableStateOf(false) }
             showDetails = remember { mutableStateOf(false) }
-            WeatherApp(weatherApiService, locationState, isFAB, isNAV,showDetails)
+            WeatherApp(
+                weatherApiService,
+                locationState,
+                isFAB,
+                isNAV,
+                showDetails,
+                connectivityObserver
+            )
             FullScreenEffect()
         }
 
@@ -180,25 +195,43 @@ class MainActivity : ComponentActivity() {
         locationState: MutableState<Location?>,
         isFAB: MutableState<Boolean>,
         isNAV: MutableState<Boolean>,
-        showDetails: MutableState<Boolean>
-    ) {
+        showDetails: MutableState<Boolean>,
+        connectivityObserver: ConnectivityObserver,
+
+        ) {
         val navController = rememberNavController()
         CompositionLocalProvider(LocalNavController provides navController) {
             var selectedIndex by remember { mutableStateOf(0) }
             val navigationBarItems = NavigationBarItems.entries.toTypedArray()
             val hapticFeedback = LocalHapticFeedback.current
+            val isConnected by connectivityObserver.isConnected.collectAsState(
+                initial = checkForInternet(this)
+            )
             Scaffold(
+                topBar = {
+                    if (!isConnected) {
+                        OfflineBanner()
+//                        Box(
+//                            modifier = Modifier.fillMaxWidth().height(500.dp),
+//                            contentAlignment = Alignment.TopCenter
+//                        ){
+//                            OfflineBanner()
+//                        }
+                    }
+                },
                 floatingActionButton = {
                     if (isFAB.value) {
                         FloatingActionButton(
                             onClick = {
-                                val currentRoute = navController.currentBackStackEntry?.destination?.route
+                                val currentRoute =
+                                    navController.currentBackStackEntry?.destination?.route
                                 if (currentRoute != null) {
-                                    when  {
+                                    when {
                                         currentRoute.startsWith(ScreensRoute.FavScreen.route) -> {
                                             navController.navigate("${ScreensRoute.MapScreen.route}/true")
                                         }
-                                        currentRoute.startsWith(ScreensRoute.AlertScreen.route)->{
+
+                                        currentRoute.startsWith(ScreensRoute.AlertScreen.route) -> {
                                             showDetails.value = true
                                         }
                                     }
@@ -275,7 +308,8 @@ class MainActivity : ComponentActivity() {
                             .padding(paddingValues),
                         contentAlignment = Alignment.Center
                     ) {
-                        SetupNavHost(apiService, locationState, isFAB, isNAV,showDetails
+                        SetupNavHost(
+                            apiService, locationState, isFAB, isNAV, showDetails
                         )
                     }
                 }
@@ -296,7 +330,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-     fun hideSystemUI() {
+    fun hideSystemUI() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.insetsController?.let {
                 it.hide(WindowInsets.Type.navigationBars()) // Hide only navigation bar
@@ -321,4 +355,22 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @Composable
+    fun OfflineBanner() {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.error)
+                .padding(top = 45.dp)
+                .padding(8.dp)
+            ,
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Text(
+                text = "You are offline",
+                color = MaterialTheme.colorScheme.onError,
+                fontSize = 16.sp
+            )
+        }
+    }
 }
