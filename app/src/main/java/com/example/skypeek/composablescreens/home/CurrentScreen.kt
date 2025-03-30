@@ -55,9 +55,12 @@ import com.example.skypeek.utiles.helpers.setUnitSymbol
 import com.example.skypeek.utiles.helpers.setWindSpeedSymbol
 import com.example.skypeek.data.models.CurrentWeather
 import com.example.skypeek.data.models.ResponseState
+import com.example.skypeek.data.models.ResponseStateLocal
 import com.example.skypeek.utiles.SharedPreference
+import com.example.skypeek.utiles.deleteSharedPrefrence
 import com.example.skypeek.utiles.helpers.formatNumberBasedOnLanguage
 import com.example.skypeek.utiles.helpers.formatTemperatureUnitBasedOnLanguage
+import com.example.skypeek.utiles.saveToSharedPrefrence
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -78,6 +81,7 @@ fun HomeScreen(
 
     val currentWeather by homeViewModel.weather.collectAsStateWithLifecycle()
     val currentHourlyWeather by homeViewModel.hourlyWeather.collectAsStateWithLifecycle()
+    val currentLocalWeather by homeViewModel.localCurrentWeather.collectAsStateWithLifecycle()
     val connectivityObserver = remember { ConnectivityObserver(context) }
     val isConnected by connectivityObserver.isConnected.collectAsStateWithLifecycle(
         initialValue = checkForInternet(
@@ -89,20 +93,6 @@ fun HomeScreen(
     val errorComposition by rememberLottieComposition(
         spec = LottieCompositionSpec.RawRes(R.raw.animation) // Replace with your Lottie file
     )
-    LaunchedEffect(isConnected) {
-        if (isConnected) {
-            locationState.value?.let { location ->
-                homeViewModel.getWeather(
-                    getFromSharedPrefrence(context, "lat")?.toDoubleOrNull() ?: location.latitude,
-                    getFromSharedPrefrence(context, "long")?.toDoubleOrNull() ?: location.longitude,
-                    BuildConfig.apiKeySafe,
-                    getFromSharedPrefrence(context, "temperature") ?: "Celsius",
-                    SharedPreference.getLanguage(context,"language")
-                )
-            }
-        }
-    }
-
 
     LaunchedEffect(isConnected) {
         if (isConnected) {
@@ -115,6 +105,17 @@ fun HomeScreen(
                     SharedPreference.getLanguage(context,"language")
                 )
             }
+            locationState.value?.let { location ->
+                homeViewModel.getWeather(
+                    getFromSharedPrefrence(context, "lat")?.toDoubleOrNull() ?: location.latitude,
+                    getFromSharedPrefrence(context, "long")?.toDoubleOrNull() ?: location.longitude,
+                    BuildConfig.apiKeySafe,
+                    getFromSharedPrefrence(context, "temperature") ?: "Celsius",
+                    SharedPreference.getLanguage(context,"language")
+                )
+            }
+        }else{
+            homeViewModel.getLastHome()
         }
     }
 
@@ -131,27 +132,6 @@ fun HomeScreen(
             .background(Color.Black.copy(alpha = 0.6f))
     ) {
         LazyColumn {
-            // Current Weather Section
-            item {
-                when (currentWeather) {
-                    is ResponseState.Error -> {
-                        Log.i("TAG", "HomeScreen: ${currentWeather as ResponseState.Error}")
-                    }
-
-                    is ResponseState.Loading -> {
-                       // LoadingIndicatore()
-                    }
-
-                    is ResponseState.Success -> {
-                        WeatherScreen((currentWeather as ResponseState.Success).data)
-                    }
-
-                    else -> {
-                        Log.i("TAG", "HomeScreen: Unexpected state -> $currentWeather")
-                    }
-                }
-            }
-
             // Spacer to separate sections
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
@@ -160,7 +140,15 @@ fun HomeScreen(
                 when {
 
                     !isConnected -> {
-                        ErrorAnimation(errorComposition)
+                       when(currentLocalWeather){
+                           is ResponseStateLocal.Error -> ErrorAnimation(errorComposition)
+                           is ResponseStateLocal.Loading -> LoadingIndicatore()
+                           is ResponseStateLocal.Success -> {
+                               WeatherScreen(((currentLocalWeather as ResponseStateLocal.Success).data.currentWeather))
+                               Weather(((currentLocalWeather as ResponseStateLocal.Success).data.forcast))
+                               WeatherForecastScreen(((currentLocalWeather as ResponseStateLocal.Success).data.forcast))
+                           }
+                       }
                     }
 
                     currentHourlyWeather is ResponseState.Error -> {
@@ -172,10 +160,14 @@ fun HomeScreen(
                         LoadingIndicatore()
                     }
 
-                    currentHourlyWeather is ResponseState.SuccessForecast -> {
+                    currentHourlyWeather is ResponseState.SuccessForecast && currentWeather is ResponseState.Success-> {
+                        WeatherScreen((currentWeather as ResponseState.Success).data)
                         Weather((currentHourlyWeather as ResponseState.SuccessForecast).data)
                         WeatherForecastScreen((currentHourlyWeather as ResponseState.SuccessForecast).data)
-
+                        homeViewModel.insertHome(
+                            (currentWeather as ResponseState.Success).data,
+                            (currentHourlyWeather as ResponseState.SuccessForecast).data
+                        )
                     }
 
                     else -> {
@@ -206,7 +198,11 @@ fun WeatherScreen(currentweather: CurrentWeather) {
     // Convert Unix timestamp to local time of the city
     val dateTimeInCity = Instant.ofEpochSecond(currentweather.dt.toLong()).atZone(cityZoneId)
 
-    val isAM = dateTimeInCity.hour < 12
+    deleteSharedPrefrence(context, "cityLat")
+    deleteSharedPrefrence(context, "cityLong")
+    saveToSharedPrefrence(context, currentweather.coord.lat.toString(), "cityLat")
+    saveToSharedPrefrence(context, currentweather.coord.lon.toString(), "cityLong")
+    val isAM = dateTimeInCity.hour in 6..18
     val composition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(
             if (isAM)

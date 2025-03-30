@@ -2,6 +2,7 @@ package com.example.skypeek.composablescreens.settings
 
 import android.content.Context
 import android.location.Location
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,8 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -36,6 +39,12 @@ import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.gray
 import com.example.skypeek.ui.theme.secbackgroundColor
 import com.example.skypeek.utiles.helpers.changeLanguage
+import com.example.skypeek.utiles.helpers.mapLanguageCodeToName
+
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingScreen(
@@ -48,31 +57,31 @@ fun SettingScreen(
 ) {
     isFAB.value = false
     isNAV.value = true
-
+    val selectedLanguage by viewModel.selectedLanguage
     val context = LocalContext.current
+    val selectedLocation by viewModel.selectedLocation
+    val selectedTemperature by viewModel.selectedTemperature
+    val selectedWindSpeed by viewModel.selectedWindSpeed
+
+    Log.i("TAG", "SettingScreen: $selectedLanguage")
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(
-                        cardBackGround, gray, cardBackGround
-                    )
+                    colors = listOf(cardBackGround, gray, cardBackGround)
                 )
             )
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 24.dp)
+            .verticalScroll(rememberScrollState()), // ✅ Makes the screen scrollable
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        SettingsCard(
-            title = stringResource(
-                R.string.select_location
-            )
-        ) {
+        SettingsCard(title = stringResource(R.string.select_location)) {
             RadioOption(
                 text = stringResource(R.string.gps),
-                isSelected = viewModel.selectedLocation.value.equals("gps", ignoreCase = true),
+                isSelected = selectedLocation.equals("gps", ignoreCase = true),
                 onSelected = {
                     viewModel.setLocation("gps")
                     deleteSharedPrefrence(context, "lat")
@@ -90,7 +99,7 @@ fun SettingScreen(
             )
             RadioOption(
                 text = stringResource(R.string.map),
-                isSelected = viewModel.selectedLocation.value.equals("map", ignoreCase = true),
+                isSelected = selectedLocation.equals("map", ignoreCase = true),
                 onSelected = {
                     viewModel.setLocation("map")
                     navigateToMAP()
@@ -101,35 +110,32 @@ fun SettingScreen(
         SettingsCard(title = stringResource(R.string.units_of_temperature)) {
             RadioOption(
                 text = stringResource(R.string.celsius),
-                isSelected = viewModel.selectedTemperature.value.equals(
-                    "celsius",
-                    ignoreCase = true
-                ),
+                isSelected = selectedTemperature.equals("celsius", ignoreCase = true),
                 onSelected = {
                     viewModel.setTemperature("celsius")
                     updateTemperaturePref(context, Temperature.CELSIUS)
+                    viewModel.setWindSpeed("METER_SEC")
+                    updateWindSpeedPref(context, WindSpeed.METER_SEC)
                 }
             )
             RadioOption(
                 text = stringResource(R.string.fahrenheit),
-                isSelected = viewModel.selectedTemperature.value.equals(
-                    "fahrenheit",
-                    ignoreCase = true
-                ),
+                isSelected = selectedTemperature.equals("fahrenheit", ignoreCase = true),
                 onSelected = {
                     viewModel.setTemperature("fahrenheit")
                     updateTemperaturePref(context, Temperature.FAHRENHEIT)
+                    viewModel.setWindSpeed("MILES_HOUR")
+                    updateWindSpeedPref(context, WindSpeed.MILES_HOUR)
                 }
             )
             RadioOption(
                 text = stringResource(R.string.kelvin),
-                isSelected = viewModel.selectedTemperature.value.equals(
-                    "kelvin",
-                    ignoreCase = true
-                ),
+                isSelected = selectedTemperature.equals("kelvin", ignoreCase = true),
                 onSelected = {
                     viewModel.setTemperature("kelvin")
                     updateTemperaturePref(context, Temperature.KELVIN)
+                    viewModel.setWindSpeed("METER_SEC")
+                    updateWindSpeedPref(context, WindSpeed.METER_SEC)
                 }
             )
         }
@@ -137,50 +143,60 @@ fun SettingScreen(
         SettingsCard(title = stringResource(R.string.language)) {
             RadioOption(
                 text = stringResource(R.string.english),
-                isSelected = viewModel.selectedLanguage.value.equals("english", ignoreCase = true),
-                onSelected = { viewModel.setLanguage("english")
-                changeLanguage(context,"en","language")}
+                isSelected = mapLanguageCodeToName(selectedLanguage).equals("english", ignoreCase = true),
+                onSelected = {
+                    viewModel.setLanguage("english")
+                    changeLanguage(context, "en", "language")
+                }
             )
             RadioOption(
                 text = stringResource(R.string.arabic),
-                isSelected = viewModel.selectedLanguage.value.equals("arabic", ignoreCase = true),
-                onSelected = { viewModel.setLanguage("arabic")
-                changeLanguage(context,"ar","language")}
+                isSelected = mapLanguageCodeToName(selectedLanguage).equals("arabic", ignoreCase = true),
+                onSelected = {
+                    viewModel.setLanguage("arabic")
+                    changeLanguage(context, "ar", "language")
+                }
             )
-            RadioOption(
-                text = stringResource(R.string.korean),
-                isSelected = viewModel.selectedLanguage.value.equals("korean", ignoreCase = true),
-                onSelected = { viewModel.setLanguage("korean")
-                changeLanguage(context,"kr","language")}
-            )
+//            RadioOption(
+//                text = stringResource(R.string.korean),
+//                isSelected = mapLanguageCodeToName(selectedLanguage).equals("korean", ignoreCase = true),
+//                onSelected = {
+//                    viewModel.setLanguage("korean")
+//                    changeLanguage(context, "kr", "language")
+//                }
+//            )
         }
 
         SettingsCard(title = stringResource(R.string.units_of_wind_speed)) {
             RadioOption(
                 text = stringResource(R.string.miles_hour),
-                isSelected = viewModel.selectedWindSpeed.value.equals(
-                    "MILES_HOUR",
-                    ignoreCase = true
-                ),
+                isSelected = selectedWindSpeed.equals("MILES_HOUR", ignoreCase = true),
                 onSelected = {
                     viewModel.setWindSpeed("MILES_HOUR")
                     updateWindSpeedPref(context, WindSpeed.MILES_HOUR)
+
+                    // Set temperature to Fahrenheit
+                    viewModel.setTemperature("fahrenheit")
+                    updateTemperaturePref(context, Temperature.FAHRENHEIT)
                 }
             )
             RadioOption(
                 text = stringResource(R.string.meter_sec),
-                isSelected = viewModel.selectedWindSpeed.value.equals(
-                    "MERE_SEC",
-                    ignoreCase = true
-                ),
+                isSelected = selectedWindSpeed.equals("METER_SEC", ignoreCase = true),
                 onSelected = {
-                    viewModel.setWindSpeed("MERE_SEC")
-                    updateWindSpeedPref(context, WindSpeed.MERE_SEC)
+                    viewModel.setWindSpeed("METER_SEC")
+                    updateWindSpeedPref(context, WindSpeed.METER_SEC)
+
+                    // Set temperature to Celsius
+                    viewModel.setTemperature("celsius")
+                    updateTemperaturePref(context, Temperature.CELSIUS)
                 }
             )
         }
+
     }
 }
+
 
 @Composable
 private fun SettingsCard(

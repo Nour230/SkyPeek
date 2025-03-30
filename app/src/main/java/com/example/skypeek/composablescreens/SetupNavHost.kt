@@ -13,6 +13,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.skypeek.composablescreens.alert.AlarmFactory
+import com.example.skypeek.composablescreens.alert.AlarmViewModel
 import com.example.skypeek.composablescreens.alert.AlertDetailsScreen
 import com.example.skypeek.composablescreens.alert.AlertScreen
 import com.example.skypeek.composablescreens.fav.FavDetailsScreen
@@ -74,6 +76,9 @@ fun SetupNavHost(
     val settingViewModel: SettingsViewModel = viewModel(
         factory = SettingFactory(context)
     )
+    val alarmViewModel : AlarmViewModel = viewModel(
+        factory = AlarmFactory(repo = weatherRepository)
+    )
     NavHost(
         navController = navController,
         startDestination = if (skipSplash) ScreensRoute.HomeScreen.route else ScreensRoute.SplashScreen.route
@@ -111,7 +116,8 @@ fun SetupNavHost(
                 null
             }
             if (location != null) {
-                FavDetailsScreen(location, homeViewModel, isFAB, isNAV)
+               // NotificationScreen()
+               FavDetailsScreen(location, homeViewModel, isFAB, isNAV)
             } else {
                 Log.e("TAG", "Location data is null")
             }
@@ -132,14 +138,16 @@ fun SetupNavHost(
             })
         }
         composable(ScreensRoute.AlertScreen.route) {
-            AlertScreen(isNAV, isFAB,showDetails)
+            AlertScreen(isNAV, isFAB,showDetails,alarmViewModel)
         }
 
         composable(ScreensRoute.AlertDetailsScreen.route) {
             AlertDetailsScreen(
                 isNAV = isNAV,
                 isFAB = isFAB,
-                onDismiss = { navController.navigate(ScreensRoute.AlertScreen.route) }
+                onDismiss = { navController.navigate(ScreensRoute.AlertScreen.route)
+                },
+                viewModel = alarmViewModel
             )
         }
     }

@@ -8,5 +8,5 @@ enum class Temperature {
 
 enum class WindSpeed{
     MILES_HOUR,
-    MERE_SEC
+    METER_SEC
 }

@@ -50,4 +50,8 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
+    <string name="time_alerts_channel_name">Time Alerts</string>
+    <string name="time_alerts_channel_description">Notifications for scheduled time alerts</string>
+    <string name="default_time_alert_title">Time Alert</string>
+    <string name="default_time_alert_message">Your scheduled time has arrived!</string>
 </resources>

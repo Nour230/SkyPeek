@@ -1,5 +1,6 @@
 package com.example.skypeek.composablescreens.alert
 
+import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,17 +43,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.skypeek.MainActivity
 import com.example.skypeek.R
+import com.example.skypeek.data.models.AlarmPojo
+import com.example.skypeek.services.NotificationService
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.secBlue
 import com.example.skypeek.ui.theme.white
+import com.example.skypeek.worker.scheduleNotification
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -60,18 +68,42 @@ import java.util.Locale
 fun AlertDetailsScreen(
     isNAV: MutableState<Boolean>,
     isFAB: MutableState<Boolean>,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    viewModel: AlarmViewModel
 ) {
     isNAV.value = false
     isFAB.value = false
-
+    val context = LocalContext.current
     // State for dialogs
     val showDatePicker = remember { mutableStateOf(false) }
     val showTimeStartPicker = remember { mutableStateOf(false) }
     val showTimeEndPicker = remember { mutableStateOf(false) }
+    val showTimeError = remember { mutableStateOf(false) }
 
-    // Picker states
-    val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
+    // Calculate today's date at midnight
+    val today = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+
+    // Picker states with date restrictions
+    val datePickerState = rememberDatePickerState(
+        initialDisplayMode = DisplayMode.Picker,
+        initialSelectedDateMillis = today,
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis >= today
+            }
+
+            @ExperimentalMaterial3Api
+            override fun isSelectableYear(year: Int): Boolean {
+                return year >= Calendar.getInstance().get(Calendar.YEAR)
+            }
+        }
+    )
+
     val startTimePickerState = rememberTimePickerState(is24Hour = false)
     val endTimePickerState = rememberTimePickerState(is24Hour = false)
 
@@ -103,7 +135,7 @@ fun AlertDetailsScreen(
                 modifier = Modifier
                     .padding(24.dp)
                     .fillMaxWidth()
-                    .fillMaxHeight(0.46f),
+                    .fillMaxHeight(0.34f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Header
@@ -116,7 +148,14 @@ fun AlertDetailsScreen(
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
-
+                // Show error if time is in past
+                if (showTimeError.value) {
+                    Text(
+                        text = "Please select a future time",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 // Date and time pickers
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -213,52 +252,6 @@ fun AlertDetailsScreen(
                             )
                         }
                     }
-
-                    // Time picker card
-                    OutlinedCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showTimeEndPicker.value = true },
-                        border = BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.alarm),
-                                    contentDescription = "End Time",
-                                    tint = secBlue,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    text = stringResource(R.string.end_time),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
-                            }
-                            Text(
-                                text = selectedEndtTime.value,
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    fontWeight = FontWeight.Medium
-                                ),
-                                color = if (selectedEndtTime.value == stringResource(R.string.select_end_time)) {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface
-                                }
-                            )
-                        }
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -267,6 +260,7 @@ fun AlertDetailsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+
                     Button(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f),
@@ -278,15 +272,64 @@ fun AlertDetailsScreen(
                     ) {
                         Text(stringResource(R.string.cancel))
                     }
-
                     Button(
                         onClick = {
-                            coroutineScope.launch { sheetState.hide(); onDismiss() }
+                            val calendar = Calendar.getInstance()
+
+                            // Set the selected date if available
+                            datePickerState.selectedDateMillis?.let {
+                                calendar.timeInMillis = it
+                            }
+
+                            // Parse and set the selected time
+                            val startTime = selectedStartTime.value.split("[: ]".toRegex()) // "hh:mm a"
+                            if (startTime.size == 3) {
+                                var hour = startTime[0].toInt()
+                                val minute = startTime[1].toInt()
+                                val amPm = startTime[2]
+
+                                // Convert to 24-hour format
+                                hour = when {
+                                    amPm.equals("PM", true) && hour != 12 -> hour + 12
+                                    amPm.equals("AM", true) && hour == 12 -> 0
+                                    else -> hour
+                                }
+
+                                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                                calendar.set(Calendar.MINUTE, minute)
+                                calendar.set(Calendar.SECOND, 0)
+                                calendar.set(Calendar.MILLISECOND, 0)
+                            }
+
+                            // Format date as "yyyy-MM-dd"
+                            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                            val formattedDate = dateFormat.format(calendar.time)
+
+                            // Create the alarm object
+                            val alarm = AlarmPojo(
+                                selectedStartTime.value, // "hh:mm a"
+                                formattedDate           // "yyyy-MM-dd"
+                            )
+
+                            // Insert the alarm into the database
+                            viewModel.indertAlarm(alarm)
+
+                            // Schedule the notification
+                            scheduleNotification(calendar, alarm, context)
+
+                            // Start the foreground service
+                            NotificationService.startService(context)
+
+                            // Hide the system UI (if applicable)
+                            (context as MainActivity).hideSystemUI()
+
+                            // Close the UI after saving
+                            coroutineScope.launch { onDismiss() }
                         },
-                        modifier = Modifier.weight(1f),
+
+                                modifier = Modifier.weight(1f),
                         enabled = (selectedDate.value != stringResource(R.string.select_date)
-                                && selectedStartTime.value != stringResource(R.string.select_time)
-                                && selectedEndtTime.value != stringResource(R.string.select_end_time)),
+                                && selectedStartTime.value != stringResource(R.string.select_time)),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = loyalBlue,
@@ -305,7 +348,7 @@ fun AlertDetailsScreen(
             Dialog(onDismissRequest = { showDatePicker.value = false }) {
                 Surface(
                     modifier = Modifier
-                        .width(340.dp)
+                        .width(440.dp)
                         .clip(RoundedCornerShape(28.dp)),
                     color = MaterialTheme.colorScheme.surface
                 ) {
@@ -335,7 +378,10 @@ fun AlertDetailsScreen(
                                     }
                                 }
                             ) {
-                                Text(text = stringResource(R.string.ok), fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = stringResource(R.string.ok),
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     }

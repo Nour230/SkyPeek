@@ -5,10 +5,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.skypeek.data.models.AlarmPojo
+import com.example.skypeek.data.models.HomePOJO
 import com.example.skypeek.utiles.Converters
 import com.example.skypeek.data.models.LocationPOJO
 @TypeConverters(Converters::class)
-@Database(entities = [LocationPOJO::class], version = 4, exportSchema = false)
+@Database(entities = [LocationPOJO::class, AlarmPojo::class, HomePOJO::class], version = 6, exportSchema = false)
 abstract class WeatherDataBase : RoomDatabase(){
     abstract fun dao(): WeatherDao
     companion object{
