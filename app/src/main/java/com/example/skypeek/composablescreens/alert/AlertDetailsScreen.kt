@@ -1,5 +1,6 @@
 package com.example.skypeek.composablescreens.alert
 
+import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,7 +49,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.skypeek.MainActivity
 import com.example.skypeek.R
+import com.example.skypeek.data.models.AlarmPojo
 import com.example.skypeek.services.NotificationService
 import com.example.skypeek.ui.theme.loyalBlue
 import com.example.skypeek.ui.theme.secBlue
@@ -64,7 +68,8 @@ import java.util.Locale
 fun AlertDetailsScreen(
     isNAV: MutableState<Boolean>,
     isFAB: MutableState<Boolean>,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    viewModel: AlarmViewModel
 ) {
     isNAV.value = false
     isFAB.value = false
@@ -73,9 +78,32 @@ fun AlertDetailsScreen(
     val showDatePicker = remember { mutableStateOf(false) }
     val showTimeStartPicker = remember { mutableStateOf(false) }
     val showTimeEndPicker = remember { mutableStateOf(false) }
+    val showTimeError = remember { mutableStateOf(false) }
 
-    // Picker states
-    val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
+    // Calculate today's date at midnight
+    val today = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+
+    // Picker states with date restrictions
+    val datePickerState = rememberDatePickerState(
+        initialDisplayMode = DisplayMode.Picker,
+        initialSelectedDateMillis = today,
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis >= today
+            }
+
+            @ExperimentalMaterial3Api
+            override fun isSelectableYear(year: Int): Boolean {
+                return year >= Calendar.getInstance().get(Calendar.YEAR)
+            }
+        }
+    )
+
     val startTimePickerState = rememberTimePickerState(is24Hour = false)
     val endTimePickerState = rememberTimePickerState(is24Hour = false)
 
@@ -120,7 +148,14 @@ fun AlertDetailsScreen(
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
-
+                // Show error if time is in past
+                if (showTimeError.value) {
+                    Text(
+                        text = "Please select a future time",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 // Date and time pickers
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -311,12 +346,17 @@ fun AlertDetailsScreen(
                                 calendar.set(Calendar.SECOND, 0)
                                 calendar.set(Calendar.MILLISECOND, 0)
                             }
-
+                            val alarm = AlarmPojo(
+                                selectedStartTime.value, selectedDate.value
+                            )
+                            viewModel.indertAlarm(alarm)
                             // Schedule notification
                             scheduleNotification(calendar, context)
 
                             // Start the foreground service
                             NotificationService.startService(context)
+                              // After saving, re-hide the navigation bar
+                            (context as MainActivity).hideSystemUI()
 
                             coroutineScope.launch { onDismiss() }
                         },

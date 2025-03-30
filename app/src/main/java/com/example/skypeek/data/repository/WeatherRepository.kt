@@ -1,5 +1,6 @@
 package com.example.skypeek.data.repository
 
+import com.example.skypeek.data.models.AlarmPojo
 import com.example.skypeek.data.models.CurrentWeather
 import com.example.skypeek.data.models.LocationPOJO
 import com.example.skypeek.data.models.WeatherResponse
@@ -12,5 +13,7 @@ interface WeatherRepository {
     suspend fun insertLocation(locationPOJO: LocationPOJO)
     suspend fun deleteLocation(locationPOJO: LocationPOJO)
     fun getAllLocations(): Flow<List<LocationPOJO>>
-
+    suspend fun insertAlarm(alarmPojo: AlarmPojo)
+    suspend fun deleteAlarm(alarmPojo: AlarmPojo)
+    fun getAllAlarms(): Flow<List<AlarmPojo>>
 }

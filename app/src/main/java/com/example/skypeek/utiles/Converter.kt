@@ -5,7 +5,8 @@ import com.example.skypeek.data.models.CurrentWeather
 import com.example.skypeek.data.models.WeatherResponse
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-
+import java.text.SimpleDateFormat
+import java.util.*
 class Converters {
     private val gson = Gson()
 
@@ -30,4 +31,10 @@ class Converters {
         val type = object : TypeToken<WeatherResponse>() {}.type
         return gson.fromJson(data, type)
     }
+}
+
+fun millisToTime(millis: Long): String {
+    val date = Date(millis)
+    val format = SimpleDateFormat("h:mm a", Locale.getDefault())
+    return format.format(date)
 }

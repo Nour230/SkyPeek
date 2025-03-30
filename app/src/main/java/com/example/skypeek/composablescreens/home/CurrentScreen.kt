@@ -211,9 +211,6 @@ fun WeatherScreen(currentweather: CurrentWeather) {
     deleteSharedPrefrence(context, "cityLong")
     saveToSharedPrefrence(context, currentweather.coord.lat.toString(), "cityLat")
     saveToSharedPrefrence(context, currentweather.coord.lon.toString(), "cityLong")
-    Log.i("TAG", "WeatherScreen:${currentweather.coord.lat} ")
-    Log.i("TAG", "WeatherScreen:${currentweather.coord.lon} ")
-
     val isAM = dateTimeInCity.hour < 12
     val composition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(

@@ -13,3 +13,10 @@ sealed class ResponseStateFav {
     data class Error(val message: Throwable): ResponseStateFav()
 }
 
+sealed class ResponseStateAlarm {
+    data object Loading: ResponseStateAlarm()
+    data class Success(val data: List<AlarmPojo>): ResponseStateAlarm()
+    data class Error(val message: Throwable): ResponseStateAlarm()
+}
+
+
