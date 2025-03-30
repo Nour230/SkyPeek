@@ -7,6 +7,12 @@ sealed class ResponseState {
     data class SuccessForecast(val data: WeatherResponse): ResponseState()
 }
 
+sealed class ResponseStateLocal {
+    data object Loading: ResponseStateLocal()
+    data class Success(val data: HomePOJO): ResponseStateLocal()
+    data class Error(val message: Throwable): ResponseStateLocal()
+}
+
 sealed class ResponseStateFav {
     data object Loading: ResponseStateFav()
     data class Success(val data: List<LocationPOJO>): ResponseStateFav()

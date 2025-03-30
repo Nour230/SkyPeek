@@ -4,6 +4,7 @@ package com.example.skypeek.data.repository
 import com.example.skypeek.data.local.WeatherLocalDataSource
 import com.example.skypeek.data.models.AlarmPojo
 import com.example.skypeek.data.models.CurrentWeather
+import com.example.skypeek.data.models.HomePOJO
 import com.example.skypeek.data.models.LocationPOJO
 import com.example.skypeek.data.models.WeatherResponse
 import com.example.skypeek.data.remote.RemoteDataSource
@@ -47,6 +48,14 @@ class WeatherRepositoryImpl(private val remoteDataSource: RemoteDataSource, priv
 
     override fun getAllAlarms(): Flow<List<AlarmPojo>> {
         return localDataSource.getAllAlarms()
+    }
+
+    override fun getLastHome(): Flow<HomePOJO> {
+        return localDataSource.getAllHomes()
+    }
+
+    override suspend fun insertLastHome(homePOJO: HomePOJO) {
+        localDataSource.insertHome(homePOJO)
     }
 
 
