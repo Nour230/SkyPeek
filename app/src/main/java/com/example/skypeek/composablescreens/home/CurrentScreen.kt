@@ -65,6 +65,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 import kotlin.properties.Delegates
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -119,17 +120,31 @@ fun HomeScreen(
         }
     }
 
-    Image(
-        painter = painterResource(R.drawable.night2),
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier = Modifier.fillMaxSize()
-    )
+
+    val currentTime = System.currentTimeMillis()
+    val calendar = Calendar.getInstance().apply { timeInMillis = currentTime }
+    val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+
+    if (currentHour in 6..17) { // 17 because 18 is not included in 'in' range
+        Image(
+            painter = painterResource(R.drawable.morning2),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+    } else {
+        Image(
+            painter = painterResource(R.drawable.night2),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.6f))
+            .background(Color.Black.copy(alpha = 0.4f))
     ) {
         LazyColumn {
             // Spacer to separate sections
