@@ -16,16 +16,16 @@
       <SelectionState runConfigName="MainActivity">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="insertAlarm_ShouldInsertAlarmCorectly()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="getAllAlarms_returnZero_whenNoAlarmsAdded()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="deleteAlarm_shouldDeleteAnAlarmSuccessfully()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="deleteAlarm_shoulddeleteanalarmsuccessfully()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="insertLocation_ShouldInsertLocationCorrectly()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="trueTest()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="testInsertHome()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

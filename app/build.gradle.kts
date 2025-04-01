@@ -50,6 +50,13 @@ android {
         compose = true
         buildConfig = true
     }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
+        }
+    }
 }
 
 dependencies {
@@ -115,4 +122,6 @@ dependencies {
     androidTestImplementation ("androidx.test:core-ktx:1.6.1")
     androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.1")
     testImplementation ("org.robolectric:robolectric:4.11")
+    androidTestImplementation("io.mockk:mockk-android:1.13.17")
+
 }
