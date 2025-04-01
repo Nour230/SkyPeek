@@ -1,4 +1,4 @@
-package com.example.skypeek.composablescreens.home
+package com.example.skypeek.composablescreens.home.viemodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -24,9 +24,6 @@ class HomeViewModel(private val repo: WeatherRepository) : ViewModel() {
 
     private val mutableLocalWeather = MutableStateFlow<ResponseStateLocal>(ResponseStateLocal.Loading)
     val localCurrentWeather = mutableLocalWeather.asStateFlow()
-
-//    private val mutableLocalForcast = MutableStateFlow<ResponseStateLocal>(ResponseStateLocal.Loading)
-//    val localForcast = mutableLocalForcast.asStateFlow()
 
     private val mutableHourlyWeather = MutableStateFlow<ResponseState>(ResponseState.Loading)
     val hourlyWeather = mutableHourlyWeather.asStateFlow()
@@ -90,6 +87,10 @@ class HomeViewModel(private val repo: WeatherRepository) : ViewModel() {
 
 class WeatherFactory(private val repo: WeatherRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return HomeViewModel(repo) as T
+        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return HomeViewModel(repo) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

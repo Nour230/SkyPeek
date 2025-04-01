@@ -68,7 +68,7 @@ fun FavScreen(
     val uiState by viewModel.favList.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.gerFavList()
+        viewModel.getFavList()
     }
     when (uiState) {
         is ResponseStateFav.Error -> Text(

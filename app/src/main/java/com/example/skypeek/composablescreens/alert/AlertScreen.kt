@@ -18,8 +18,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +29,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -49,6 +52,7 @@ import com.example.skypeek.data.models.ResponseStateAlarm
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.gray
 import com.example.skypeek.utiles.millisToTime
+import kotlinx.coroutines.launch
 
 @Composable
 fun AlertScreen(
@@ -136,7 +140,8 @@ fun AlertScreenData(
             } else {
                 items(list.size) {
                     FavItem(item = list[it]
-                    , viewModel = viewModel)
+                    , viewModel = viewModel,
+                        snack = snackbarHostState)
                 }
             }
         }
@@ -161,7 +166,8 @@ fun AlertScreenData(
 @Composable
 fun FavItem(
     item:AlarmPojo,
-    viewModel: AlarmViewModel
+    viewModel: AlarmViewModel,
+    snack: SnackbarHostState
 ) {
     val time = item.time
     val timeNow = System.currentTimeMillis()
@@ -172,6 +178,8 @@ fun FavItem(
     }
 
     val isDeleted = remember { mutableStateOf(false) }
+    val deleted by viewModel.isDelete.collectAsStateWithLifecycle(stringResource(R.string.item_deleted_from_favorite))
+    val coroutineScope = rememberCoroutineScope()
     if (!isDeleted.value) {
 
         Card(
@@ -198,8 +206,20 @@ fun FavItem(
 
                 Button(
                     onClick = {
-                        isDeleted.value = true
-                        viewModel.deleteAlarmRoom(item,context)
+                        coroutineScope.launch {
+                            isDeleted.value = true
+                            val result = snack.showSnackbar(
+                                message = deleted,
+                                actionLabel = context.getString(R.string.undo),
+                                duration = SnackbarDuration.Short,
+                                withDismissAction = true,
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                isDeleted.value = false
+                            } else {
+                                viewModel.deleteAlarmRoom(item,context)
+                            }
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(colorResource(R.color.darkBlue)),
                     shape = RoundedCornerShape(8.dp),

@@ -21,10 +21,10 @@ class FavViewModel(val repo: WeatherRepository) : ViewModel() {
     val isDelete = _isDeleted.asSharedFlow()
 
     init {
-        gerFavList()
+        getFavList()
     }
 
-    fun gerFavList() {
+    fun getFavList() {
         viewModelScope.launch {
             try {
                 val response = repo.getAllLocations()

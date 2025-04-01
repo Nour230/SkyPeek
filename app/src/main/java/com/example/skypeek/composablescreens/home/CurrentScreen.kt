@@ -48,6 +48,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.skypeek.BuildConfig
 import com.example.skypeek.R
+import com.example.skypeek.composablescreens.home.viemodel.HomeViewModel
 import com.example.skypeek.utiles.getFromSharedPrefrence
 import com.example.skypeek.utiles.helpers.internet.ConnectivityObserver
 import com.example.skypeek.utiles.helpers.internet.checkForInternet
@@ -66,7 +67,6 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import kotlin.properties.Delegates
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -125,7 +125,7 @@ fun HomeScreen(
     val calendar = Calendar.getInstance().apply { timeInMillis = currentTime }
     val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
 
-    if (currentHour in 6..17) { // 17 because 18 is not included in 'in' range
+    if (currentHour in 6..17) {
         Image(
             painter = painterResource(R.drawable.morning2),
             contentDescription = null,

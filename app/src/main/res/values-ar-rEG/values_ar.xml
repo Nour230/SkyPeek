@@ -55,5 +55,6 @@
     <string name="time_alerts_channel_description">إشعارات لتنبيهات الوقت المجدولة</string>
     <string name="default_time_alert_title">تنبيه الوقت</string>
     <string name="default_time_alert_message">لقد حان وقت التنبيه المجدول!</string>
+    <string name="you_are_offline">أنت غير متصل بالانترنت </string>
 
 </resources>

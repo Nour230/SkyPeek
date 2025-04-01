@@ -25,8 +25,8 @@ import com.example.skypeek.composablescreens.fav.map.MapFactory
 import com.example.skypeek.composablescreens.fav.map.MapScreen
 import com.example.skypeek.composablescreens.fav.map.MapViewModel
 import com.example.skypeek.composablescreens.home.HomeScreen
-import com.example.skypeek.composablescreens.home.HomeViewModel
-import com.example.skypeek.composablescreens.home.WeatherFactory
+import com.example.skypeek.composablescreens.home.viemodel.HomeViewModel
+import com.example.skypeek.composablescreens.home.viemodel.WeatherFactory
 import com.example.skypeek.composablescreens.settings.SettingFactory
 import com.example.skypeek.composablescreens.settings.SettingScreen
 import com.example.skypeek.composablescreens.settings.SettingsViewModel

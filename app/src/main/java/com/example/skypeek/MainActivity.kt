@@ -47,6 +47,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
@@ -211,12 +212,6 @@ class MainActivity : ComponentActivity() {
                 topBar = {
                     if (!isConnected) {
                         OfflineBanner()
-//                        Box(
-//                            modifier = Modifier.fillMaxWidth().height(500.dp),
-//                            contentAlignment = Alignment.TopCenter
-//                        ){
-//                            OfflineBanner()
-//                        }
                     }
                 },
                 floatingActionButton = {
@@ -367,7 +362,7 @@ class MainActivity : ComponentActivity() {
             contentAlignment = Alignment.TopCenter
         ) {
             Text(
-                text = "You are offline",
+                text = stringResource(R.string.you_are_offline),
                 color = MaterialTheme.colorScheme.onError,
                 fontSize = 16.sp
             )

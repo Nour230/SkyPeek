@@ -44,11 +44,10 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.skypeek.BuildConfig
 import com.example.skypeek.R
-import com.example.skypeek.composablescreens.home.HomeViewModel
+import com.example.skypeek.composablescreens.home.viemodel.HomeViewModel
 import com.example.skypeek.composablescreens.home.TopBar
 import com.example.skypeek.composablescreens.home.Weather
 import com.example.skypeek.composablescreens.home.WeatherForecastScreen
-import com.example.skypeek.composablescreens.home.WeatherScreen
 import com.example.skypeek.composablescreens.home.getNightWeatherLottie
 import com.example.skypeek.composablescreens.home.getWeatherLottie
 import com.example.skypeek.utiles.getFromSharedPrefrence
@@ -64,8 +63,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.Locale
-import android.content.Context
 import com.example.skypeek.utiles.helpers.formatNumberBasedOnLanguage
 import com.example.skypeek.utiles.helpers.formatTemperatureUnitBasedOnLanguage
 
@@ -99,9 +96,6 @@ fun FavDetailsScreen(
                 SharedPreference.getLanguage(context,"language")
             )
         }
-    }
-
-    LaunchedEffect(Unit) {
         locationState.value?.let { location ->
             viewModel.getHourlyWeather(
                 location.latitude,
@@ -184,7 +178,7 @@ fun WeatherFavDetailsScreen(currentweather: CurrentWeather) {
     val cityZoneId = ZoneId.ofOffset("UTC", ZoneOffset.ofTotalSeconds(cityOffsetSeconds))
     val dateTimeInCity = Instant.ofEpochSecond(currentweather.dt.toLong()).atZone(cityZoneId)
 
-    val isAM = dateTimeInCity.hour < 12
+    val isAM = dateTimeInCity.hour in 6.. 18
     val composition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(
             if (isAM)
