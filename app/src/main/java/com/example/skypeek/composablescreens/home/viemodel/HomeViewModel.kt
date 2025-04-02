@@ -28,6 +28,9 @@ class HomeViewModel(private val repo: WeatherRepository) : ViewModel() {
     private val mutableHourlyWeather = MutableStateFlow<ResponseState>(ResponseState.Loading)
     val hourlyWeather = mutableHourlyWeather.asStateFlow()
 
+    private val _insertionError = MutableSharedFlow<String>()
+    val insertionError = _insertionError.asSharedFlow()
+
     private val mutableError = MutableSharedFlow<String>()
     val error = mutableError.asSharedFlow()
 
@@ -71,7 +74,11 @@ class HomeViewModel(private val repo: WeatherRepository) : ViewModel() {
     fun insertHome(homeCurrent: CurrentWeather, homeHourly: WeatherResponse) {
         val home = HomePOJO(currentWeather = homeCurrent, forcast = homeHourly)
         viewModelScope.launch {
-            repo.insertLastHome(home)
+            try {
+                repo.insertLastHome(home)
+            } catch (e: Exception) {
+                _insertionError.emit(e.message ?: "Unknown error")
+            }
         }
     }
 

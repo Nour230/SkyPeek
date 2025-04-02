@@ -301,7 +301,6 @@ fun WeatherMainInfo(
     val context = LocalContext.current
     val tempUnit = setUnitSymbol(units)
     val formatedUnite = formatTemperatureUnitBasedOnLanguage(tempUnit,context)
-    Log.e("TAG", "WeatherMainInfo: $formatedUnite ")
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         LottieAnimation(
@@ -313,7 +312,7 @@ fun WeatherMainInfo(
                 .height(200.dp)
         )
         Text(
-            text = temperature +formatedUnite,
+            text = formatNumberBasedOnLanguage(context,temperature) +formatedUnite,
             color = Color.White,
             fontSize = 64.sp,
             fontWeight = FontWeight.Bold

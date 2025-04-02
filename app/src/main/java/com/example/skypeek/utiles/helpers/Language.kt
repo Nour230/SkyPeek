@@ -67,10 +67,16 @@ fun changeLanguage(context: Context, languageCode: String, languageName: String)
 
 
 fun formatNumberBasedOnLanguage(context: Context, number: Any): String {
-    val language = SharedPreference.getLanguage(context, "language")
+    var language = SharedPreference.getLanguage(context, "language")
+
+    // If system language is selected, get the actual system language
+    if (language == "system") {
+        language = Locale.getDefault().language
+    }
+
     val numberStr = when (number) {
         is Int -> number.toString()
-        is Double -> number.toString() // or keep decimals if needed
+        is Double -> number.toString()
         is Float -> number.toString()
         is String -> number
         else -> number.toString()
@@ -86,7 +92,11 @@ fun convertToArabicNumbers(number: String): String {
 }
 
 fun formatTemperatureUnitBasedOnLanguage(unit: String, context: Context): String {
-    val language = SharedPreference.getLanguage(context, "language")
+    var language = SharedPreference.getLanguage(context, "language")
+    if (language == "system") {
+        language = Locale.getDefault().language
+    }
+
     if (language == "ar") {
         return when (unit) {
             "°C" -> "°س"

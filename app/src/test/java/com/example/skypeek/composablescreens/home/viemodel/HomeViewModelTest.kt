@@ -44,17 +44,10 @@ class HomeViewModelTest {
         homeViewModel.insertHome(mockCurrentWeather, mockForecast)
         homeViewModel.getLastHome()
 
-        advanceUntilIdle()
-        // Then - Verify through state changes
-        assertTrue(
-            "State should contain the inserted home data",
-            homeViewModel.localCurrentWeather.value is ResponseStateLocal.Success
-        )
-
-        val successState = homeViewModel.localCurrentWeather.value as ResponseStateLocal.Success
-        assertTrue(
-            "State should contain the expected home data",
-            successState.data == mockHomePOJO
-        )
+        // Then
+        val state = homeViewModel.localCurrentWeather.value
+        assertTrue(state is ResponseStateLocal.Success)
+        assertTrue((state as ResponseStateLocal.Success).data == mockHomePOJO)
     }
+
 }

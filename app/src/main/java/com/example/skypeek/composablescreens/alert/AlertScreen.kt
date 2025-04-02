@@ -51,6 +51,7 @@ import com.example.skypeek.data.models.AlarmPojo
 import com.example.skypeek.data.models.ResponseStateAlarm
 import com.example.skypeek.ui.theme.cardBackGround
 import com.example.skypeek.ui.theme.gray
+import com.example.skypeek.utiles.helpers.formatNumberBasedOnLanguage
 import com.example.skypeek.utiles.millisToTime
 import kotlinx.coroutines.launch
 
@@ -195,13 +196,13 @@ fun FavItem(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = item.date,
+                    text = formatNumberBasedOnLanguage(context,item.date),
                     style = MaterialTheme.typography.titleMedium,
                     color = colorResource(R.color.black),
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = item.time)
+                Text(text = formatNumberBasedOnLanguage(context,item.time))
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Button(
