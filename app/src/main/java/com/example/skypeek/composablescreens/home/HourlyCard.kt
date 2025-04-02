@@ -122,7 +122,7 @@ fun DailyWeatherItem(weather: WeatherData, units: String) {
             )
             Text(
                 text = formatNumberBasedOnLanguage(LocalContext.current,mainWeather.temp.toInt())
-                        + formatTemperatureUnitBasedOnLanguage(tempUnit),
+                        + formatTemperatureUnitBasedOnLanguage(tempUnit, LocalContext.current),
                 color = black,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold

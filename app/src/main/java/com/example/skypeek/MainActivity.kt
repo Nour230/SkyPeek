@@ -75,6 +75,7 @@ import com.exyte.animatednavbar.animation.indendshape.Height
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.libraries.places.api.Places
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     private lateinit var locationHelper: LocationHelper
@@ -85,9 +86,14 @@ class MainActivity : ComponentActivity() {
 
     override fun attachBaseContext(newBase: Context?) {
         val language = SharedPreference.getLanguage(newBase!!, "language")
-        super.attachBaseContext(LocaleHelper.setLocale(newBase, language))
-
+        val langToUse = if (language == "system") {
+            Locale.getDefault().language.takeIf { it.isNotEmpty() } ?: "en"
+        } else {
+            language
+        }
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, langToUse))
     }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -8,7 +8,9 @@ import com.example.skypeek.data.models.AlarmPojo
 import com.example.skypeek.data.models.HomePOJO
 import com.example.skypeek.data.models.LocationPOJO
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
@@ -36,6 +38,7 @@ class WeatherLocalDataSourceTest {
     @After
     fun tearDown() = dataBase.close()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun insertLocation_ShouldInsertLocationCorrectly() = runTest {
         // Given a test location
@@ -49,6 +52,7 @@ class WeatherLocalDataSourceTest {
 
         //when
         localDataSourceImpl.insertLocation(location)
+        advanceUntilIdle()
 
         // then
         val locations = localDataSourceImpl.getAllLocations().first()
@@ -56,6 +60,7 @@ class WeatherLocalDataSourceTest {
         assertThat(locations[0].city,`is`(location.city))
 
     }
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testInsertHome() = runTest {
         // Given
@@ -67,12 +72,14 @@ class WeatherLocalDataSourceTest {
 
         // When
         localDataSourceImpl.insertHome(home)
+        advanceUntilIdle()
 
         // Then
         val result = localDataSourceImpl.getAllHomes().first()
         assertThat(result, `is`(home))
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testInsertAndDeleteAlarm() = runTest {
         // Given an alarm object
@@ -98,6 +105,7 @@ class WeatherLocalDataSourceTest {
 
         // When deleting the alarm
         localDataSourceImpl.deleteAlarm(alarm)
+        advanceUntilIdle()
 
         // Then assert the alarm has been deleted
         val remainingAlarms = localDataSourceImpl.getAllAlarms().first()

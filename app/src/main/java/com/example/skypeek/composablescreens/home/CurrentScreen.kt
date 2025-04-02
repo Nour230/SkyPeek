@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,6 +68,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -85,25 +87,57 @@ fun HomeScreen(
     val currentLocalWeather by homeViewModel.localCurrentWeather.collectAsStateWithLifecycle()
     val connectivityObserver = remember { ConnectivityObserver(context) }
     val isConnected by connectivityObserver.isConnected.collectAsStateWithLifecycle(
-        initialValue = checkForInternet(
-            context
-        )
+        initialValue = checkForInternet(context)
     )
 
     // Lottie composition for error animation
     val errorComposition by rememberLottieComposition(
-        spec = LottieCompositionSpec.RawRes(R.raw.animation) // Replace with your Lottie file
+        spec = LottieCompositionSpec.RawRes(R.raw.animation)
     )
 
+    // Determine background based on API time
+    val backgroundImage = remember { mutableStateOf(R.drawable.morning2) } // Default
+
+    // Update background when weather data changes
+    LaunchedEffect(currentWeather, currentLocalWeather) {
+        val weatherData = when {
+            isConnected && currentWeather is ResponseState.Success ->
+                (currentWeather as ResponseState.Success).data
+            currentLocalWeather is ResponseStateLocal.Success ->
+                (currentLocalWeather as ResponseStateLocal.Success).data.currentWeather
+            else -> null
+        }
+
+        weatherData?.let { data ->
+            // Convert API timestamp to hour of day
+            val apiTimeMillis = data.dt * 1000L // Convert seconds to milliseconds
+            val calendar = Calendar.getInstance().apply { timeInMillis = apiTimeMillis }
+            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+
+            backgroundImage.value = if (hour in 6..17) {
+                R.drawable.morning2 // Daytime image
+            } else {
+                R.drawable.night2 // Nighttime image
+            }
+        }
+    }
+
+    // Rest of your LaunchedEffect for data fetching remains the same
     LaunchedEffect(isConnected) {
+        val effectiveLang = if (SharedPreference.getLanguage(context, "language") == "system") {
+            Locale.getDefault().language.takeIf { it.isNotEmpty() } ?: "en"
+        } else {
+            SharedPreference.getLanguage(context, "language")
+        }
+
         if (isConnected) {
             locationState.value?.let { location ->
                 homeViewModel.getHourlyWeather(
                     getFromSharedPrefrence(context, "lat")?.toDoubleOrNull() ?: location.latitude,
                     getFromSharedPrefrence(context, "long")?.toDoubleOrNull() ?: location.longitude,
                     BuildConfig.apiKeySafe,
-                    getFromSharedPrefrence(context, "temperature") ?: "Celsius",
-                    SharedPreference.getLanguage(context,"language")
+                    getFromSharedPrefrence(context, "temperature") ?: "kelvin",
+                    effectiveLang // Use the resolved language code
                 )
             }
             locationState.value?.let { location ->
@@ -111,35 +145,22 @@ fun HomeScreen(
                     getFromSharedPrefrence(context, "lat")?.toDoubleOrNull() ?: location.latitude,
                     getFromSharedPrefrence(context, "long")?.toDoubleOrNull() ?: location.longitude,
                     BuildConfig.apiKeySafe,
-                    getFromSharedPrefrence(context, "temperature") ?: "Celsius",
-                    SharedPreference.getLanguage(context,"language")
+                    getFromSharedPrefrence(context, "temperature") ?: "kelvin",
+                    effectiveLang // Use the resolved language code
                 )
             }
-        }else{
+        } else {
             homeViewModel.getLastHome()
         }
     }
 
-
-    val currentTime = System.currentTimeMillis()
-    val calendar = Calendar.getInstance().apply { timeInMillis = currentTime }
-    val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
-
-    if (currentHour in 6..17) {
-        Image(
-            painter = painterResource(R.drawable.morning2),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-    } else {
-        Image(
-            painter = painterResource(R.drawable.night2),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-    }
+    // Use the determined background image
+    Image(
+        painter = painterResource(id = backgroundImage.value),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = Modifier.fillMaxSize()
+    )
 
     Box(
         modifier = Modifier
@@ -147,35 +168,28 @@ fun HomeScreen(
             .background(Color.Black.copy(alpha = 0.4f))
     ) {
         LazyColumn {
-            // Spacer to separate sections
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // Hourly Weather Section
             item {
                 when {
-
                     !isConnected -> {
-                       when(currentLocalWeather){
-                           is ResponseStateLocal.Error -> ErrorAnimation(errorComposition)
-                           is ResponseStateLocal.Loading -> LoadingIndicatore()
-                           is ResponseStateLocal.Success -> {
-                               WeatherScreen(((currentLocalWeather as ResponseStateLocal.Success).data.currentWeather))
-                               Weather(((currentLocalWeather as ResponseStateLocal.Success).data.forcast))
-                               WeatherForecastScreen(((currentLocalWeather as ResponseStateLocal.Success).data.forcast))
-                           }
-                       }
+                        when(currentLocalWeather) {
+                            is ResponseStateLocal.Error -> ErrorAnimation(errorComposition)
+                            is ResponseStateLocal.Loading -> LoadingIndicatore()
+                            is ResponseStateLocal.Success -> {
+                                WeatherScreen(((currentLocalWeather as ResponseStateLocal.Success).data.currentWeather))
+                                Weather(((currentLocalWeather as ResponseStateLocal.Success).data.forcast))
+                                WeatherForecastScreen(((currentLocalWeather as ResponseStateLocal.Success).data.forcast))
+                            }
+                        }
                     }
-
                     currentHourlyWeather is ResponseState.Error -> {
-
                         Text(text = "Error loading hourly weather data ${currentHourlyWeather as ResponseState.Error}")
                     }
-
                     currentHourlyWeather is ResponseState.Loading -> {
                         LoadingIndicatore()
                     }
-
-                    currentHourlyWeather is ResponseState.SuccessForecast && currentWeather is ResponseState.Success-> {
+                    currentHourlyWeather is ResponseState.SuccessForecast && currentWeather is ResponseState.Success -> {
                         WeatherScreen((currentWeather as ResponseState.Success).data)
                         Weather((currentHourlyWeather as ResponseState.SuccessForecast).data)
                         WeatherForecastScreen((currentHourlyWeather as ResponseState.SuccessForecast).data)
@@ -184,7 +198,6 @@ fun HomeScreen(
                             (currentHourlyWeather as ResponseState.SuccessForecast).data
                         )
                     }
-
                     else -> {
                         Log.i(
                             "TAG",
@@ -287,6 +300,8 @@ fun WeatherMainInfo(
 ) {
     val context = LocalContext.current
     val tempUnit = setUnitSymbol(units)
+    val formatedUnite = formatTemperatureUnitBasedOnLanguage(tempUnit,context)
+    Log.e("TAG", "WeatherMainInfo: $formatedUnite ")
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         LottieAnimation(
@@ -298,7 +313,7 @@ fun WeatherMainInfo(
                 .height(200.dp)
         )
         Text(
-            text = temperature +formatTemperatureUnitBasedOnLanguage(tempUnit),
+            text = temperature +formatedUnite,
             color = Color.White,
             fontSize = 64.sp,
             fontWeight = FontWeight.Bold
@@ -370,7 +385,7 @@ fun WeatherDetails(
                 WeatherDetailItem(
                     icon = R.drawable.wind,
                     label = stringResource(R.string.wind),
-                    value = formatNumberBasedOnLanguage(context, windSpeed) + formatTemperatureUnitBasedOnLanguage(windUnit)
+                    value = formatNumberBasedOnLanguage(context, windSpeed) + formatTemperatureUnitBasedOnLanguage(windUnit,context)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(

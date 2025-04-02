@@ -1,6 +1,7 @@
 package com.example.skypeek.composablescreens.alert
 
 import android.app.Activity
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -299,6 +300,16 @@ fun AlertDetailsScreen(
                                 calendar.set(Calendar.MINUTE, minute)
                                 calendar.set(Calendar.SECOND, 0)
                                 calendar.set(Calendar.MILLISECOND, 0)
+                            }
+                            if (calendar.timeInMillis <= System.currentTimeMillis()) {
+                                // Show toast message
+                                Toast.makeText(
+                                    context,
+                                    "Cannot set alarm for past time",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                showTimeStartPicker.value = true
+                                return@Button
                             }
 
                             // Format date as "yyyy-MM-dd"

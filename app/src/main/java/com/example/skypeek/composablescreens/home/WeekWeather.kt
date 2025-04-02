@@ -151,10 +151,10 @@ fun WeatherItem(weather: WeatherData,units:String) {
             )
             Text(
                 text = formatNumberBasedOnLanguage(context, mainWeather.temp_max.toInt()) +
-                        formatTemperatureUnitBasedOnLanguage(tempUnit) +
+                        formatTemperatureUnitBasedOnLanguage(tempUnit,context) +
                         "/" +
                         formatNumberBasedOnLanguage(context, mainWeather.temp_min.toInt()) +
-                        formatTemperatureUnitBasedOnLanguage(tempUnit) ,
+                        formatTemperatureUnitBasedOnLanguage(tempUnit,context) ,
                 color = black
             )
             Text(text = weather.weather[0].description, color = black)

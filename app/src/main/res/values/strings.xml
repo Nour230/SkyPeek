@@ -55,4 +55,5 @@
     <string name="default_time_alert_title">Time Alert</string>
     <string name="default_time_alert_message">Your scheduled time has arrived!</string>
     <string name="you_are_offline">You are offline</string>
+    <string name="system_language">System Language</string>
 </resources>

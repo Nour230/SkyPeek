@@ -32,7 +32,7 @@ class NotificationService : Service() {
                 .build()
 
             val channel = NotificationChannel(
-                NOTIFICATION_CHANNEL_ID,
+                "message_channel",
                 "Alarm Notifications",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
@@ -47,7 +47,7 @@ class NotificationService : Service() {
     }
 
     private fun startForeground() {
-        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, "message_channel")
             .setContentTitle("Alarm Service")
             .setContentText("Running in background")
             .setSmallIcon(R.drawable.alarm)

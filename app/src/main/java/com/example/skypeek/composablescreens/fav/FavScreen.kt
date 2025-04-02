@@ -201,7 +201,7 @@ fun FavItem(
                     Text(
                         text = stringResource(R.string.temp_is)+":  "
                                 + formatNumberBasedOnLanguage(context,data.currentWeather.main.temp)+
-                                formatTemperatureUnitBasedOnLanguage(tempUnit),
+                                formatTemperatureUnitBasedOnLanguage(tempUnit,context),
                         fontSize = 18.sp,
                         modifier = Modifier.weight(1f)
                     )

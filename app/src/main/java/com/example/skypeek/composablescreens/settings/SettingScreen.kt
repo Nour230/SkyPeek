@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -30,21 +31,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.skypeek.R
+import com.example.skypeek.ui.theme.cardBackGround
+import com.example.skypeek.ui.theme.gray
+import com.example.skypeek.ui.theme.secbackgroundColor
 import com.example.skypeek.utiles.deleteSharedPrefrence
 import com.example.skypeek.utiles.enums.Temperature
 import com.example.skypeek.utiles.enums.WindSpeed
 import com.example.skypeek.utiles.helpers.LocationHelper
-import com.example.skypeek.utiles.saveToSharedPrefrence
-import com.example.skypeek.ui.theme.cardBackGround
-import com.example.skypeek.ui.theme.gray
-import com.example.skypeek.ui.theme.secbackgroundColor
 import com.example.skypeek.utiles.helpers.changeLanguage
 import com.example.skypeek.utiles.helpers.mapLanguageCodeToName
-
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.unit.dp
+import com.example.skypeek.utiles.saveToSharedPrefrence
+import java.util.Locale
 
 @Composable
 fun SettingScreen(
@@ -63,7 +60,7 @@ fun SettingScreen(
     val selectedTemperature by viewModel.selectedTemperature
     val selectedWindSpeed by viewModel.selectedWindSpeed
 
-    Log.i("TAG", "SettingScreen: $selectedLanguage")
+    //Log.i("TAG", "SettingScreen: $selectedLanguage")
 
     Column(
         modifier = Modifier
@@ -143,30 +140,30 @@ fun SettingScreen(
         SettingsCard(title = stringResource(R.string.language)) {
             RadioOption(
                 text = stringResource(R.string.english),
-                isSelected = mapLanguageCodeToName(selectedLanguage).equals("english", ignoreCase = true),
+                isSelected = selectedLanguage.equals("en", ignoreCase = true),
                 onSelected = {
-                    viewModel.setLanguage("english")
-                    changeLanguage(context, "en", "language")
+                    viewModel.setLanguage("en")
+                    changeLanguage(context, "en", "English")
                 }
             )
             RadioOption(
                 text = stringResource(R.string.arabic),
-                isSelected = mapLanguageCodeToName(selectedLanguage).equals("arabic", ignoreCase = true),
+                isSelected = selectedLanguage.equals("ar", ignoreCase = true),
                 onSelected = {
-                    viewModel.setLanguage("arabic")
-                    changeLanguage(context, "ar", "language")
+                    viewModel.setLanguage("ar")
+                    changeLanguage(context, "ar", "Arabic")
                 }
             )
+            // In your SettingsScreen composable
             RadioOption(
-                text = stringResource(R.string.korean),
-                isSelected = mapLanguageCodeToName(selectedLanguage).equals("korean", ignoreCase = true),
+                text = stringResource(R.string.system_language),
+                isSelected = selectedLanguage.equals("system", ignoreCase = true),
                 onSelected = {
-                    viewModel.setLanguage("korean")
-                    changeLanguage(context, "kr", "language")
+                    viewModel.setLanguage("system")
+                    changeLanguage(context, "system", "System")
                 }
             )
         }
-
         SettingsCard(title = stringResource(R.string.units_of_wind_speed)) {
             RadioOption(
                 text = stringResource(R.string.miles_hour),

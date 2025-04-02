@@ -40,7 +40,3 @@ fun millisToTime(millis: Long): String {
 }
 
 
-fun parseTimeToMillis(time: String): Long {
-    val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault()) // Match your time format
-    return sdf.parse(time)?.time ?: 0L
-}

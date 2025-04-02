@@ -238,7 +238,10 @@ fun WeatherFavDetailsMainInfo(
     units: String
 ) {
     val context = LocalContext.current
-    val tempUnit = formatTemperatureUnitBasedOnLanguage(setUnitSymbol(units))
+    val tempUnit = formatTemperatureUnitBasedOnLanguage(
+        setUnitSymbol(units),
+        context = context
+    )
     val formattedTemp = formatNumberBasedOnLanguage(context, temperature)
     val formattedCloud = formatNumberBasedOnLanguage(context, cloud)
 
@@ -283,7 +286,7 @@ fun WeatherFavDetails(
     min: String
 ) {
     val context = LocalContext.current
-    val windUnit = formatTemperatureUnitBasedOnLanguage(setWindSpeedSymbol(units))
+    val windUnit = formatTemperatureUnitBasedOnLanguage(setWindSpeedSymbol(units),context)
     val formattedRealFeel = formatNumberBasedOnLanguage(context, realFeel)
     val formattedHumidity = formatNumberBasedOnLanguage(context, humidity)
     val formattedWindSpeed = formatNumberBasedOnLanguage(context, windSpeed)

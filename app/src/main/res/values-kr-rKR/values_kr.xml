@@ -56,5 +56,6 @@
     <string name="default_time_alert_title">시간 알림</string>
     <string name="default_time_alert_message">예약된 시간이 되었습니다!</string>
     <string name="you_are_offline">당신은 오프라인 상태입니다</string>
+    <string name="system_language">System Language</string>
 
 </resources>

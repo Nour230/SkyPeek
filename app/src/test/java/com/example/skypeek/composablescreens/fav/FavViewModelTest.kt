@@ -6,6 +6,7 @@ import com.example.skypeek.data.models.ResponseStateFav
 import com.example.skypeek.data.repository.WeatherRepository
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -29,6 +30,7 @@ class FavViewModelTest {
         viewModel = FavViewModel(repo)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun getFavList_whenSuccess_shouldEmitSuccessState() = runTest {
         // Given

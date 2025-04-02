@@ -4,10 +4,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.util.Log
+import androidx.core.content.edit
 import com.example.skypeek.MainActivity
 import com.example.skypeek.utiles.SharedPreference
-import java.util.*
-import androidx.core.content.edit
+import java.util.Locale
 
 object LocaleHelper {
     fun setLocale(context: Context, languageCode: String): Context {
@@ -36,17 +37,33 @@ object LocaleHelper {
     }
 }
 
-fun changeLanguage(context: Context, languageCode: String, language: String) {
-    SharedPreference.setLanguage(context, languageCode, language)
-    LocaleHelper.updateResources(context, languageCode)
+fun changeLanguage(context: Context, languageCode: String, languageName: String) {
+    Log.d("Language", "Changing language to: $languageCode ($languageName)")
 
+    // Save the language preference
+    SharedPreference.setLanguage(context, languageCode, languageName)
+
+    // Determine the language to use
+    val langToUse = if (languageCode == "system") {
+        Locale.getDefault().language.takeIf { it.isNotEmpty() } ?: "en"
+    } else {
+        languageCode
+    }
+
+    // Update app locale
+    LocaleHelper.updateResources(context, langToUse)
+
+    // Set flag to skip splash screen
     val sharedPref = context.getSharedPreferences("myPref", Context.MODE_PRIVATE)
-    sharedPref.edit() { putBoolean("SkipSplash", true) }
+    sharedPref.edit {
+        putBoolean("SkipSplash", true)
+    }
+
+    // Restart activity
     val intent = Intent(context, MainActivity::class.java)
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
     context.startActivity(intent)
 }
-
 
 
 fun formatNumberBasedOnLanguage(context: Context, number: Any): String {
@@ -68,15 +85,15 @@ fun convertToArabicNumbers(number: String): String {
     }.joinToString("")
 }
 
-fun formatTemperatureUnitBasedOnLanguage(unit: String): String {
-    val language = Locale.getDefault().language
+fun formatTemperatureUnitBasedOnLanguage(unit: String, context: Context): String {
+    val language = SharedPreference.getLanguage(context, "language")
     if (language == "ar") {
         return when (unit) {
             "°C" -> "°س"
             "°F" -> "°ف"
             "°K" -> "°ك"
-            "mph"->"م/س"
-            "m/s"->"م/ث"
+            "mph" -> "م/س"
+            "m/s" -> "م/ث"
             else -> "°س"
         }
     }

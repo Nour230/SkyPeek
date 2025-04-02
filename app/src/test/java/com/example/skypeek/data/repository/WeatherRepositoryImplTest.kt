@@ -8,8 +8,10 @@ import com.example.skypeek.data.remote.RemoteDataSource
 import io.mockk.coEvery
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -26,6 +28,7 @@ class WeatherRepositoryImplTest {
         repository = WeatherRepositoryImpl(remoteDataSource, localDataSource)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun featchWeather_returnsmockkedweatherdata()= runTest {
         //Given
@@ -63,6 +66,8 @@ class WeatherRepositoryImplTest {
         coEvery { remoteDataSource.getDailyWeather(lat,lon,apiKey,units, lang) } returns flowOf(mockWeather)
 
         val result = repository.fetchWeather(lat, lon, apiKey, units, lang).first()
+        advanceUntilIdle()
+
         //then
         assertEquals("stations", result.base)
         assertEquals(25.0, result.main.temp, 0.0)
@@ -71,6 +76,7 @@ class WeatherRepositoryImplTest {
         assertEquals("US", result.sys.country)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun insertLocation_AndReturnLocation_FromLocalDataSource() = runTest {
         // Given
@@ -81,6 +87,8 @@ class WeatherRepositoryImplTest {
             forecast = mockk(relaxed = true))
         //when calling insertLocation
         repository.insertLocation(location)
+        advanceUntilIdle()
+
         //then
         val result = repository.getAllLocations().first()
         assertEquals(1, result.size)

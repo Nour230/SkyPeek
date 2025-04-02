@@ -20,7 +20,7 @@ class SettingsViewModel(private val context: Context) : ViewModel() {
 
         const val DEFAULT_LOCATION = "gps"
         const val DEFAULT_TEMPERATURE = "celsius"
-        const val DEFAULT_LANGUAGE = "english"
+        const val DEFAULT_LANGUAGE = "system"
         const val DEFAULT_WIND_SPEED = "miles/hour"
     }
 
@@ -61,10 +61,7 @@ class SettingsViewModel(private val context: Context) : ViewModel() {
     fun setLanguage(value: String) {
         _selectedLanguage.value = value // ✅ Update UI state immediately
         saveToSharedPrefrence(context, value, PREF_LANGUAGE)
-        Log.d("SettingsViewModel", "Saved Language: $value")
     }
-
-
 
     fun setWindSpeed(value: String) {
         _selectedWindSpeed.value = value

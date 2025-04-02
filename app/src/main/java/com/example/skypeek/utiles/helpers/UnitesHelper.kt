@@ -70,6 +70,7 @@ fun mapLanguageCodeToName(code: String): String {
         "en" -> "english"
         "ar" -> "arabic"
         "kr" -> "korean"
+        "sys" -> "system"
         else -> "english"
     }
 }

@@ -173,7 +173,7 @@ fun FavItem(
     val timeNow = System.currentTimeMillis()
     val context = LocalContext.current
     val now = millisToTime(timeNow)
-    if (now >= time) {
+    if (now > time) {
         viewModel.deleteAlarmRoom(item, context)
     }
 
