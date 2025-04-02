@@ -24,14 +24,15 @@ import org.junit.runner.RunWith
 class WeatherLocalDataSourceTest {
     private lateinit var dataBase: WeatherDataBase
     private lateinit var dao: WeatherDao
-    private lateinit var localDataSourceImpl: WeatherLocalDataSourceImpl
+    private lateinit var localDataSourceImpl: WeatherLocalDataSource
 
     @Before
     fun setup(){
         dataBase = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
             WeatherDataBase::class.java
-        ).build()
+        )
+            .allowMainThreadQueries().build()
         dao = dataBase.dao()
         localDataSourceImpl = WeatherLocalDataSourceImpl(dao)
     }
